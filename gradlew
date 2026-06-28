@@ -36,8 +36,7 @@ APP_HOME=$( cd "${APP_HOME:-./}" && pwd -P ) || exit
 APP_NAME="Gradle"
 APP_BASE_NAME=${0##*/}
 
-# ✅ YAHAN BADLAV KIYA — 64m ki jagah 2048m
-DEFAULT_JVM_OPTS='"-Xmx2048m" "-Xms512m"'
+DEFAULT_JVM_OPTS="-Xmx2048m -Xms512m"
 
 # Use the maximum available, or set MAX_FD != -1 to use that value.
 MAX_FD=maximum
