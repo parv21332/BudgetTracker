@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Include SQLite database in backup -->
+    <include domain="database" path="budget_tracker.db" />
+    <!-- Include shared preferences (session data) -->
+    <include domain="sharedpref" path="BudgetTrackerSession.xml" />
+    <!-- Exclude temporary/cache files -->
+    <exclude domain="cache" path="." />
+</full-backup-content>
