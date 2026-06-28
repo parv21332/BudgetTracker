@@ -3,7 +3,7 @@ name: Build Debug APK
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:   # Manual trigger button bhi milega
+  workflow_dispatch:   # Manual trigger button
 
 jobs:
   build:
@@ -40,11 +40,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 6. Build Debug APK
+      # 6. Build Debug APK (Fix added here using safe memory flags)
       - name: Build Debug APK
+        env:
+          _JAVA_OPTIONS: "-Xmx2g -XX:MaxMetaspaceSize=512m"
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g"
         run: ./gradlew assembleDebug --stacktrace
 
-      # 7. Upload APK as artifact (download link milega)
+      # 7. Upload APK as artifact
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
