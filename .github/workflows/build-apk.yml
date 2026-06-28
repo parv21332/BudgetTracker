@@ -22,6 +22,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # Direct command execution without relying on system envs
       - name: Build Debug APK
-        run: ./gradlew assembleDebug -Dorg.gradle.jvmargs="-Xmx2048m" --stacktrace
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m"
+        run: ./gradlew assembleDebug --stacktrace
