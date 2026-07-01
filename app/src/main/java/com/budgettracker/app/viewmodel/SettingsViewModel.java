@@ -1,44 +1,48 @@
 package com.budgettracker.app.viewmodel;
 
 import android.app.Application;
+import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
-import com.budgettracker.app.data.repository.UserRepository;
+import com.budgettracker.app.data.database.BudgetDatabase;
+import com.budgettracker.app.data.database.UserDao;
 import com.budgettracker.app.utils.BackupUtils;
+import com.budgettracker.app.utils.PasswordUtils;
 import com.budgettracker.app.utils.SessionManager;
 
-/**
- * ViewModel for Settings screen.
- */
 public class SettingsViewModel extends AndroidViewModel {
 
-    private final UserRepository userRepository;
+    private static final String TAG = "SettingsViewModel";
+    private final UserDao userDao;
     private final SessionManager sessionManager;
 
     public final MutableLiveData<String> operationResult = new MutableLiveData<>();
     public final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     public final MutableLiveData<Boolean> darkModeEnabled = new MutableLiveData<>(false);
     public final MutableLiveData<String> currentUserName = new MutableLiveData<>("");
+    // Signal to recreate activity for dark mode
+    public final MutableLiveData<Boolean> recreateActivity = new MutableLiveData<>(false);
 
     private final int userId;
 
     public SettingsViewModel(@NonNull Application application) {
         super(application);
-        userRepository = new UserRepository(application);
+        BudgetDatabase db = BudgetDatabase.getDatabase(application);
+        userDao = db.userDao();
         sessionManager = new SessionManager(application);
         userId = sessionManager.getUserId();
         currentUserName.setValue(sessionManager.getUserName());
 
-        // Load current dark mode setting
-        new Thread(() -> {
-            com.budgettracker.app.data.model.User user = userRepository.getCurrentUser();
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
+            com.budgettracker.app.data.model.User user = userDao.getUserById(userId);
             if (user != null) {
                 darkModeEnabled.postValue(user.isDarkMode());
             }
-        }).start();
+        });
     }
 
     public void changePassword(String oldPassword, String newPassword, String confirmPassword) {
@@ -52,23 +56,33 @@ public class SettingsViewModel extends AndroidViewModel {
         }
 
         isLoading.postValue(true);
-        new Thread(() -> {
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
             try {
-                boolean success = userRepository.changePassword(userId, oldPassword, newPassword);
-                if (success) {
-                    operationResult.postValue("SUCCESS:Password changed successfully");
-                } else {
-                    operationResult.postValue("ERROR:Current password is incorrect");
+                com.budgettracker.app.data.model.User user = userDao.getUserById(userId);
+                if (user == null) {
+                    operationResult.postValue("ERROR:User not found");
+                    return;
                 }
+                String oldHash = PasswordUtils.hashPassword(oldPassword);
+                if (!oldHash.equals(user.getPasswordHash())) {
+                    operationResult.postValue("ERROR:Current password is incorrect");
+                    return;
+                }
+                String newHash = PasswordUtils.hashPassword(newPassword);
+                userDao.updatePassword(userId, newHash);
+                operationResult.postValue("SUCCESS:Password changed successfully");
             } finally {
                 isLoading.postValue(false);
             }
-        }).start();
+        });
     }
 
     public void toggleDarkMode(boolean enabled) {
         darkModeEnabled.setValue(enabled);
-        userRepository.updateDarkMode(userId, enabled);
+        BudgetDatabase.databaseWriteExecutor.execute(() ->
+                userDao.updateDarkMode(userId, enabled));
+        // Signal activity to recreate with new theme
+        recreateActivity.postValue(true);
     }
 
     public void updateName(String name) {
@@ -76,45 +90,58 @@ public class SettingsViewModel extends AndroidViewModel {
             operationResult.postValue("ERROR:Name cannot be empty");
             return;
         }
-        userRepository.updateName(userId, name.trim());
+        BudgetDatabase.databaseWriteExecutor.execute(() ->
+                userDao.updateName(userId, name.trim()));
+        sessionManager.updateName(name.trim());
         currentUserName.setValue(name.trim());
         operationResult.postValue("SUCCESS:Name updated");
     }
 
-    public void backupDatabase(Application application) {
+    /** Backup DB to app's external files dir (no permission needed on Android 10+) */
+    public void backupDatabase(Context context) {
         isLoading.postValue(true);
-        new Thread(() -> {
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
             try {
-                String path = BackupUtils.backupDatabase(application);
+                // Close WAL checkpoint before backup
+                BudgetDatabase.getDatabase(context).getOpenHelper().getWritableDatabase()
+                        .execSQL("PRAGMA wal_checkpoint(FULL)");
+
+                String path = BackupUtils.backupDatabase(context);
                 if (path != null) {
-                    operationResult.postValue("SUCCESS:Backup saved to: " + path);
+                    operationResult.postValue("SUCCESS:Backup saved:\n" + path);
                 } else {
-                    operationResult.postValue("ERROR:Backup failed");
+                    operationResult.postValue("ERROR:Backup failed. Check storage permission.");
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Backup error: " + e.getMessage(), e);
+                operationResult.postValue("ERROR:Backup error: " + e.getMessage());
             } finally {
                 isLoading.postValue(false);
             }
-        }).start();
+        });
     }
 
-    public void restoreDatabase(Application application, String filePath) {
+    public void restoreDatabase(Context context, String filePath) {
         isLoading.postValue(true);
-        new Thread(() -> {
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
             try {
-                boolean success = BackupUtils.restoreDatabase(application, filePath);
+                boolean success = BackupUtils.restoreDatabase(context, filePath);
                 if (success) {
-                    operationResult.postValue("SUCCESS:Database restored. Please restart the app.");
+                    operationResult.postValue("SUCCESS:Restore complete. Please restart the app.");
                 } else {
-                    operationResult.postValue("ERROR:Restore failed. File not found.");
+                    operationResult.postValue("ERROR:Restore failed. File may be invalid.");
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Restore error: " + e.getMessage(), e);
+                operationResult.postValue("ERROR:Restore error: " + e.getMessage());
             } finally {
                 isLoading.postValue(false);
             }
-        }).start();
+        });
     }
 
     public void logout() {
-        userRepository.logout();
+        sessionManager.clearSession();
     }
 
     public int getUserId() { return userId; }

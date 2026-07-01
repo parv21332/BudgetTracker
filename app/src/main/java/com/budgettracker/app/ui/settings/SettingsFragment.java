@@ -1,7 +1,5 @@
 package com.budgettracker.app.ui.settings;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -22,10 +21,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
-/**
- * SettingsFragment - dark mode, backup, restore, change password, logout.
- */
 public class SettingsFragment extends Fragment {
 
     private FragmentSettingsBinding binding;
@@ -33,8 +33,7 @@ public class SettingsFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -55,11 +54,8 @@ public class SettingsFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Dark mode toggle
-        binding.switchDarkMode.setOnCheckedChangeListener((btn, isChecked) -> {
-            settingsViewModel.toggleDarkMode(isChecked);
-            MainActivity.applyDarkMode(isChecked);
-        });
+        // Dark mode toggle — DO NOT trigger on initial observe
+        binding.switchDarkMode.setOnCheckedChangeListener(null);
 
         // Change Name
         binding.btnChangeName.setOnClickListener(v -> showChangeNameDialog());
@@ -69,7 +65,7 @@ public class SettingsFragment extends Fragment {
 
         // Backup database
         binding.btnBackup.setOnClickListener(v ->
-                settingsViewModel.backupDatabase(requireActivity().getApplication()));
+                settingsViewModel.backupDatabase(requireContext()));
 
         // Restore database
         binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
@@ -116,26 +112,36 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showRestoreDialog() {
-        File[] backups = BackupUtils.getAvailableBackups();
-        if (backups.length == 0) {
-            Snackbar.make(requireView(), "No backups found in Downloads/BudgetTracker/",
-                    Snackbar.LENGTH_LONG).show();
+        List<File> backups = BackupUtils.getAvailableBackups(requireContext());
+
+        if (backups.isEmpty()) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("No Backups Found")
+                    .setMessage("Backup location:\n" + BackupUtils.getBackupLocation(requireContext())
+                            + "\n\nCreate a backup first using the 'Backup Data' button.")
+                    .setPositiveButton("OK", null)
+                    .show();
             return;
         }
 
-        String[] names = new String[backups.length];
-        for (int i = 0; i < backups.length; i++) names[i] = backups[i].getName();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
+        String[] names = new String[backups.size()];
+        for (int i = 0; i < backups.size(); i++) {
+            names[i] = backups.get(i).getName() + "\n("
+                    + sdf.format(new Date(backups.get(i).lastModified())) + ")";
+        }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Select Backup to Restore")
                 .setItems(names, (d, which) -> {
+                    File selected = backups.get(which);
                     new AlertDialog.Builder(requireContext())
                             .setTitle("Confirm Restore")
-                            .setMessage("This will replace current data. The app will need to restart. Continue?")
+                            .setMessage("Restoring from:\n" + selected.getName()
+                                    + "\n\nThis will replace all current data. App will restart. Continue?")
                             .setPositiveButton("Restore", (d2, w) ->
                                     settingsViewModel.restoreDatabase(
-                                            requireActivity().getApplication(),
-                                            backups[which].getAbsolutePath()))
+                                            requireContext(), selected.getAbsolutePath()))
                             .setNegativeButton("Cancel", null)
                             .show();
                 })
@@ -158,27 +164,63 @@ public class SettingsFragment extends Fragment {
     }
 
     private void observeViewModel() {
+        // Dark mode — set switch silently first, then attach listener
         settingsViewModel.darkModeEnabled.observe(getViewLifecycleOwner(), enabled -> {
+            // Remove listener before setting value to avoid triggering toggleDarkMode
+            binding.switchDarkMode.setOnCheckedChangeListener(null);
             binding.switchDarkMode.setChecked(enabled);
+            // Re-attach listener after setting
+            binding.switchDarkMode.setOnCheckedChangeListener((btn, isChecked) ->
+                    settingsViewModel.toggleDarkMode(isChecked));
+        });
+
+        // Recreate activity when dark mode changes
+        settingsViewModel.recreateActivity.observe(getViewLifecycleOwner(), shouldRecreate -> {
+            if (shouldRecreate != null && shouldRecreate && isAdded()) {
+                settingsViewModel.recreateActivity.setValue(false);
+                Boolean isDark = settingsViewModel.darkModeEnabled.getValue();
+                // Apply theme
+                AppCompatDelegate.setDefaultNightMode(
+                        isDark != null && isDark
+                                ? AppCompatDelegate.MODE_NIGHT_YES
+                                : AppCompatDelegate.MODE_NIGHT_NO);
+                // Recreate to apply
+                requireActivity().recreate();
+            }
         });
 
         settingsViewModel.currentUserName.observe(getViewLifecycleOwner(), name -> {
-            binding.tvUserName.setText(name);
+            if (binding != null) binding.tvUserName.setText(name);
         });
 
         settingsViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
-            binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+            if (binding != null) {
+                binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+                binding.btnBackup.setEnabled(!loading);
+                binding.btnRestore.setEnabled(!loading);
+            }
         });
 
         settingsViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
-            if (result == null) return;
+            if (result == null || binding == null) return;
             if (result.startsWith("SUCCESS:")) {
-                Snackbar.make(requireView(), result.substring(8), Snackbar.LENGTH_LONG).show();
+                String msg = result.substring(8);
+                Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
+
+                // If restore succeeded, restart app
+                if (msg.contains("Restore complete") || msg.contains("restart")) {
+                    new android.os.Handler().postDelayed(() -> {
+                        if (isAdded()) {
+                            android.os.Process.killProcess(android.os.Process.myPid());
+                        }
+                    }, 2000);
+                }
             } else if (result.startsWith("ERROR:")) {
                 Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
                         .setBackgroundTint(requireContext().getColor(R.color.error_red))
                         .show();
             }
+            settingsViewModel.operationResult.setValue(null);
         });
     }
 

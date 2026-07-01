@@ -26,9 +26,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-/**
- * AddExpenseFragment - handles both Add and Edit expense.
- */
 public class AddExpenseFragment extends Fragment {
 
     private FragmentAddExpenseBinding binding;
@@ -37,12 +34,11 @@ public class AddExpenseFragment extends Fragment {
     private Expense editingExpense = null;
     private boolean isEditMode = false;
     private List<Category> categoryList = new ArrayList<>();
-    private int selectedCategoryIndex = 0;
+    private boolean resultHandled = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentAddExpenseBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -51,6 +47,7 @@ public class AddExpenseFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         expenseViewModel = new ViewModelProvider(this).get(ExpenseViewModel.class);
+        resultHandled = false;
 
         if (getArguments() != null) {
             int expenseId = getArguments().getInt("expenseId", -1);
@@ -69,13 +66,14 @@ public class AddExpenseFragment extends Fragment {
     private void loadExpenseForEdit(int expenseId) {
         new Thread(() -> {
             editingExpense = expenseViewModel.getExpenseById(expenseId);
-            if (editingExpense != null) {
+            if (editingExpense != null && isAdded()) {
                 selectedDate = editingExpense.getDate();
                 requireActivity().runOnUiThread(() -> {
-                    binding.etAmount.setText(CurrencyUtils.formatPlain(editingExpense.getAmount()));
-                    binding.etNotes.setText(editingExpense.getNotes());
-                    binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
-                    // Category spinner will be set once categories load
+                    if (binding != null) {
+                        binding.etAmount.setText(CurrencyUtils.formatPlain(editingExpense.getAmount()));
+                        binding.etNotes.setText(editingExpense.getNotes());
+                        binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    }
                 });
             }
         }).start();
@@ -95,8 +93,11 @@ public class AddExpenseFragment extends Fragment {
         binding.tvSelectedDate.setOnClickListener(v -> showDatePicker());
         binding.btnPickDate.setOnClickListener(v -> showDatePicker());
         binding.btnSave.setOnClickListener(v -> saveExpense());
-        binding.btnCancel.setOnClickListener(v ->
-                Navigation.findNavController(requireView()).navigateUp());
+        binding.btnCancel.setOnClickListener(v -> {
+            if (isAdded()) {
+                Navigation.findNavController(requireView()).navigateUp();
+            }
+        });
     }
 
     private void showDatePicker() {
@@ -106,7 +107,9 @@ public class AddExpenseFragment extends Fragment {
                 (v, year, month, day) -> {
                     cal.set(year, month, day);
                     selectedDate = cal.getTimeInMillis();
-                    binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    if (binding != null) {
+                        binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    }
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
@@ -115,6 +118,8 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void saveExpense() {
+        if (binding == null) return;
+
         String amountStr = binding.etAmount.getText().toString().trim();
         String notes = binding.etNotes.getText().toString().trim();
 
@@ -126,13 +131,14 @@ public class AddExpenseFragment extends Fragment {
         binding.tilAmount.setError(null);
 
         if (categoryList.isEmpty()) {
-            Snackbar.make(requireView(), "Please select a category", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(requireView(), "Categories loading, please wait...", Snackbar.LENGTH_SHORT).show();
             return;
         }
 
         double amount = CurrencyUtils.parseAmount(amountStr);
-        Category selectedCategory = categoryList.get(
-                binding.spinnerCategory.getSelectedItemPosition());
+        int selectedPos = binding.spinnerCategory.getSelectedItemPosition();
+        if (selectedPos < 0 || selectedPos >= categoryList.size()) selectedPos = 0;
+        Category selectedCategory = categoryList.get(selectedPos);
 
         if (isEditMode && editingExpense != null) {
             editingExpense.setAmount(amount);
@@ -161,33 +167,46 @@ public class AddExpenseFragment extends Fragment {
                     names
             );
             spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            binding.spinnerCategory.setAdapter(spinnerAdapter);
-
-            // Restore selection in edit mode
-            if (isEditMode && editingExpense != null) {
-                for (int i = 0; i < categoryList.size(); i++) {
-                    if (categoryList.get(i).getName().equals(editingExpense.getCategoryName())) {
-                        binding.spinnerCategory.setSelection(i);
-                        break;
+            if (binding != null) {
+                binding.spinnerCategory.setAdapter(spinnerAdapter);
+                // Restore selection in edit mode
+                if (isEditMode && editingExpense != null) {
+                    for (int i = 0; i < categoryList.size(); i++) {
+                        if (categoryList.get(i).getName().equals(editingExpense.getCategoryName())) {
+                            binding.spinnerCategory.setSelection(i);
+                            break;
+                        }
                     }
                 }
             }
         });
 
         expenseViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
-            binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-            binding.btnSave.setEnabled(!loading);
+            if (binding != null) {
+                binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+                binding.btnSave.setEnabled(!loading);
+            }
         });
 
         expenseViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
-            if (result == null) return;
+            if (result == null || resultHandled) return;
+
             if (result.startsWith("SUCCESS:")) {
-                Snackbar.make(requireView(), result.substring(8), Snackbar.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
+                resultHandled = true;
+                expenseViewModel.operationResult.setValue(null);
+                if (isAdded() && !requireActivity().isFinishing()) {
+                    try {
+                        Navigation.findNavController(requireView()).navigateUp();
+                    } catch (Exception e) {
+                        requireActivity().onBackPressed();
+                    }
+                }
             } else if (result.startsWith("ERROR:")) {
-                Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
-                        .setBackgroundTint(requireContext().getColor(R.color.error_red))
-                        .show();
+                if (isAdded() && binding != null) {
+                    Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(requireContext().getColor(R.color.error_red))
+                            .show();
+                }
             }
         });
     }

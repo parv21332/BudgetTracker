@@ -22,22 +22,18 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Calendar;
 
-/**
- * AddIncomeFragment - used for both Adding and Editing income.
- * If incomeId argument is passed, it's in edit mode.
- */
 public class AddIncomeFragment extends Fragment {
 
     private FragmentAddIncomeBinding binding;
     private IncomeViewModel incomeViewModel;
     private long selectedDate = System.currentTimeMillis();
-    private Income editingIncome = null; // non-null when editing
+    private Income editingIncome = null;
     private boolean isEditMode = false;
+    private boolean resultHandled = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
+                             ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentAddIncomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -46,8 +42,8 @@ public class AddIncomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         incomeViewModel = new ViewModelProvider(this).get(IncomeViewModel.class);
+        resultHandled = false;
 
-        // Check for edit mode
         if (getArguments() != null) {
             int incomeId = getArguments().getInt("incomeId", -1);
             if (incomeId != -1) {
@@ -56,7 +52,6 @@ public class AddIncomeFragment extends Fragment {
             }
         }
 
-        // Set today's date as default
         binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
         updateTitle();
         setupClickListeners();
@@ -66,13 +61,15 @@ public class AddIncomeFragment extends Fragment {
     private void loadIncomeForEdit(int incomeId) {
         new Thread(() -> {
             editingIncome = incomeViewModel.getIncomeById(incomeId);
-            if (editingIncome != null) {
+            if (editingIncome != null && isAdded()) {
                 selectedDate = editingIncome.getDate();
                 requireActivity().runOnUiThread(() -> {
-                    binding.etAmount.setText(CurrencyUtils.formatPlain(editingIncome.getAmount()));
-                    binding.etSource.setText(editingIncome.getSource());
-                    binding.etNotes.setText(editingIncome.getNotes());
-                    binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    if (binding != null) {
+                        binding.etAmount.setText(CurrencyUtils.formatPlain(editingIncome.getAmount()));
+                        binding.etSource.setText(editingIncome.getSource());
+                        binding.etNotes.setText(editingIncome.getNotes());
+                        binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    }
                 });
             }
         }).start();
@@ -89,26 +86,26 @@ public class AddIncomeFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // Date picker
         binding.tvSelectedDate.setOnClickListener(v -> showDatePicker());
         binding.btnPickDate.setOnClickListener(v -> showDatePicker());
-
-        // Save button
         binding.btnSave.setOnClickListener(v -> saveIncome());
-
-        // Cancel button
-        binding.btnCancel.setOnClickListener(v ->
-                Navigation.findNavController(requireView()).navigateUp());
+        binding.btnCancel.setOnClickListener(v -> {
+            if (isAdded()) {
+                Navigation.findNavController(requireView()).navigateUp();
+            }
+        });
     }
 
     private void showDatePicker() {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(selectedDate);
         new DatePickerDialog(requireContext(),
-                (view, year, month, dayOfMonth) -> {
-                    cal.set(year, month, dayOfMonth);
+                (v, year, month, day) -> {
+                    cal.set(year, month, day);
                     selectedDate = cal.getTimeInMillis();
-                    binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    if (binding != null) {
+                        binding.tvSelectedDate.setText(DateUtils.formatDate(selectedDate));
+                    }
                 },
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
@@ -117,11 +114,12 @@ public class AddIncomeFragment extends Fragment {
     }
 
     private void saveIncome() {
+        if (binding == null) return;
+
         String amountStr = binding.etAmount.getText().toString().trim();
         String source = binding.etSource.getText().toString().trim();
         String notes = binding.etNotes.getText().toString().trim();
 
-        // Validate
         String amountError = CurrencyUtils.validateAmount(amountStr);
         if (amountError != null) {
             binding.tilAmount.setError(amountError);
@@ -150,19 +148,32 @@ public class AddIncomeFragment extends Fragment {
 
     private void observeViewModel() {
         incomeViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
-            binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-            binding.btnSave.setEnabled(!loading);
+            if (binding != null) {
+                binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+                binding.btnSave.setEnabled(!loading);
+            }
         });
 
         incomeViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
-            if (result == null) return;
+            if (result == null || resultHandled) return;
+
             if (result.startsWith("SUCCESS:")) {
-                Snackbar.make(requireView(), result.substring(8), Snackbar.LENGTH_SHORT).show();
-                Navigation.findNavController(requireView()).navigateUp();
+                resultHandled = true;
+                // Clear the result so it won't fire again
+                incomeViewModel.operationResult.setValue(null);
+                if (isAdded() && !requireActivity().isFinishing()) {
+                    try {
+                        Navigation.findNavController(requireView()).navigateUp();
+                    } catch (Exception e) {
+                        requireActivity().onBackPressed();
+                    }
+                }
             } else if (result.startsWith("ERROR:")) {
-                Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
-                        .setBackgroundTint(requireContext().getColor(R.color.error_red))
-                        .show();
+                if (isAdded() && binding != null) {
+                    Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(requireContext().getColor(R.color.error_red))
+                            .show();
+                }
             }
         });
     }

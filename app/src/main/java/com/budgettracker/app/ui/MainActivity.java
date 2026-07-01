@@ -11,15 +11,12 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.budgettracker.app.R;
+import com.budgettracker.app.data.database.BudgetDatabase;
+import com.budgettracker.app.data.database.UserDao;
 import com.budgettracker.app.databinding.ActivityMainBinding;
 import com.budgettracker.app.ui.auth.AuthActivity;
 import com.budgettracker.app.utils.SessionManager;
 
-/**
- * MainActivity - main container after login.
- * Hosts the Bottom Navigation and NavHostFragment.
- * Manages dark mode theming.
- */
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -27,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Apply dark mode before setContentView
-        applyTheme();
+        // Apply dark mode BEFORE setContentView
+        applyDarkModeFromPrefs();
 
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -37,18 +34,28 @@ public class MainActivity extends AppCompatActivity {
         setupNavigation();
     }
 
-    private void applyTheme() {
+    /**
+     * Read dark mode preference from DB and apply AppCompatDelegate.
+     * Called before setContentView so theme applies correctly.
+     */
+    private void applyDarkModeFromPrefs() {
         SessionManager session = new SessionManager(this);
-        if (session.isLoggedIn()) {
-            // We'll load dark mode from DB, for now use session default
-            // Dark mode is applied reactively from Settings
+        int userId = session.getUserId();
+        if (userId > 0) {
+            // Run synchronously on main thread before UI inflates
+            try {
+                UserDao userDao = BudgetDatabase.getDatabase(this).userDao();
+                com.budgettracker.app.data.model.User user = userDao.getUserById(userId);
+                if (user != null) {
+                    AppCompatDelegate.setDefaultNightMode(
+                            user.isDarkMode()
+                                    ? AppCompatDelegate.MODE_NIGHT_YES
+                                    : AppCompatDelegate.MODE_NIGHT_NO);
+                }
+            } catch (Exception e) {
+                // Ignore — use system default
+            }
         }
-    }
-
-    public static void applyDarkMode(boolean enabled) {
-        AppCompatDelegate.setDefaultNightMode(
-                enabled ? AppCompatDelegate.MODE_NIGHT_YES
-                        : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
     private void setupNavigation() {
@@ -58,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
         navController = navHostFragment.getNavController();
 
-        // Define top-level destinations (no back arrow shown)
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.dashboardFragment,
                 R.id.incomeFragment,
@@ -67,17 +73,11 @@ public class MainActivity extends AppCompatActivity {
                 R.id.settingsFragment
         ).build();
 
-        // Setup toolbar
         setSupportActionBar(binding.toolbar);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        // Setup bottom navigation
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
     }
 
-    /**
-     * Called from SettingsFragment on logout.
-     */
     public void logout() {
         new SessionManager(this).clearSession();
         Intent intent = new Intent(this, AuthActivity.class);
@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        return navController.navigateUp() || super.onSupportNavigateUp();
+        return navController != null && navController.navigateUp()
+                || super.onSupportNavigateUp();
     }
 }

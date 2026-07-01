@@ -1,41 +1,38 @@
 package com.budgettracker.app.viewmodel;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.budgettracker.app.data.database.BudgetDatabase;
+import com.budgettracker.app.data.database.IncomeDao;
 import com.budgettracker.app.data.model.Income;
-import com.budgettracker.app.data.repository.IncomeRepository;
 import com.budgettracker.app.utils.SessionManager;
 
 import java.util.List;
 
-/**
- * ViewModel for Income screens (list, add, edit).
- */
 public class IncomeViewModel extends AndroidViewModel {
 
-    private final IncomeRepository incomeRepository;
+    private static final String TAG = "IncomeViewModel";
+    private final IncomeDao incomeDao;
     private final int userId;
 
     public LiveData<List<Income>> allIncome;
     public final MutableLiveData<String> operationResult = new MutableLiveData<>();
     public final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 
-    // Current filter state
-    private long filterStart = 0;
-    private long filterEnd = Long.MAX_VALUE;
-    private String searchQuery = "";
-
     public IncomeViewModel(@NonNull Application application) {
         super(application);
-        incomeRepository = new IncomeRepository(application);
+        BudgetDatabase db = BudgetDatabase.getDatabase(application);
+        incomeDao = db.incomeDao();
         SessionManager session = new SessionManager(application);
         userId = session.getUserId();
-        allIncome = incomeRepository.getAllIncome(userId);
+        Log.d(TAG, "IncomeViewModel init, userId=" + userId);
+        allIncome = incomeDao.getAllIncome(userId);
     }
 
     public void addIncome(double amount, String source, long date, String notes) {
@@ -47,51 +44,58 @@ public class IncomeViewModel extends AndroidViewModel {
             operationResult.postValue("ERROR:Source is required");
             return;
         }
+        if (userId <= 0) {
+            operationResult.postValue("ERROR:Session expired. Please login again.");
+            return;
+        }
 
         isLoading.postValue(true);
-        new Thread(() -> {
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
             try {
                 Income income = new Income(userId, amount, source.trim(), date,
                         notes != null ? notes.trim() : "");
-                incomeRepository.insert(income);
+                long id = incomeDao.insertIncome(income);
+                Log.d(TAG, "Income inserted with id=" + id);
                 operationResult.postValue("SUCCESS:Income added successfully");
+            } catch (Exception e) {
+                Log.e(TAG, "Insert income error: " + e.getMessage(), e);
+                operationResult.postValue("ERROR:Failed to save: " + e.getMessage());
             } finally {
                 isLoading.postValue(false);
             }
-        }).start();
+        });
     }
 
     public void updateIncome(Income income) {
-        if (income.getAmount() <= 0) {
-            operationResult.postValue("ERROR:Amount must be greater than 0");
-            return;
-        }
         isLoading.postValue(true);
-        new Thread(() -> {
+        BudgetDatabase.databaseWriteExecutor.execute(() -> {
             try {
-                incomeRepository.update(income);
+                income.setUpdatedAt(System.currentTimeMillis());
+                incomeDao.updateIncome(income);
                 operationResult.postValue("SUCCESS:Income updated successfully");
+            } catch (Exception e) {
+                operationResult.postValue("ERROR:" + e.getMessage());
             } finally {
                 isLoading.postValue(false);
             }
-        }).start();
+        });
     }
 
     public void deleteIncome(int incomeId) {
-        new Thread(() -> incomeRepository.delete(incomeId, userId)).start();
-        operationResult.postValue("SUCCESS:Income deleted");
+        BudgetDatabase.databaseWriteExecutor.execute(() ->
+                incomeDao.deleteById(incomeId, userId));
     }
 
     public LiveData<List<Income>> searchIncome(String query) {
-        return incomeRepository.searchIncome(userId, query);
+        return incomeDao.searchIncome(userId, query);
     }
 
     public LiveData<List<Income>> filterByDateRange(long start, long end) {
-        return incomeRepository.getIncomeByDateRange(userId, start, end);
+        return incomeDao.getIncomeByDateRange(userId, start, end);
     }
 
     public Income getIncomeById(int id) {
-        return incomeRepository.getIncomeById(id);
+        return incomeDao.getIncomeById(id);
     }
 
     public int getUserId() { return userId; }
