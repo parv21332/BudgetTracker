@@ -164,13 +164,13 @@ public class SettingsFragment extends Fragment {
 
         settingsViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
             if (result == null || binding == null || !isAdded()) return;
-            settingsViewModel.operationResult.setValue(null);
+            settingsViewModel.operationResult.postValue(null);
 
             if (result.startsWith("SUCCESS:")) {
                 String msg = result.substring(8);
                 Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
                 if (msg.contains("restart") || msg.contains("Restore complete")) {
-                    new android.os.Handler().postDelayed(() -> {
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                         if (isAdded()) android.os.Process.killProcess(android.os.Process.myPid());
                     }, 2000);
                 }

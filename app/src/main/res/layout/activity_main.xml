@@ -39,7 +39,6 @@
         android:background="@color/surface"
         app:itemIconTint="@color/nav_selector"
         app:itemTextColor="@color/nav_selector"
-        app:itemActiveIndicatorColor="@color/primary_light"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

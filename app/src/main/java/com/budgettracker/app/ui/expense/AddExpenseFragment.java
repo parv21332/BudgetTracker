@@ -79,7 +79,7 @@ public class AddExpenseFragment extends Fragment {
             try {
                 Navigation.findNavController(requireView()).navigateUp();
             } catch (Exception e) {
-                requireActivity().onBackPressed();
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
             }
         }
     }

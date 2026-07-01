@@ -1,9 +1,11 @@
 package com.budgettracker.app.ui;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
+
+        // Set active indicator color programmatically (avoids resource linker issues with
+        // app:itemActiveIndicatorColor in XML on some AGP versions)
+        binding.bottomNavigation.setItemActiveIndicatorColor(
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_light)));
     }
 
     public void logout() {

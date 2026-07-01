@@ -8,11 +8,8 @@ import androidx.core.content.FileProvider;
 
 import com.budgettracker.app.data.model.Expense;
 import com.budgettracker.app.data.model.Income;
-import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -130,7 +127,7 @@ public class ExportUtils {
             if (!expenseList.isEmpty()) {
                 document.add(new Paragraph("Expense Transactions")
                         .setFontSize(14).setBold().setMarginTop(10));
-                Table expenseTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 2, 3}))
+                Table expenseTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 3}))
                         .useAllAvailableWidth();
                 addHeaderRow(expenseTable, new String[]{"Category", "Amount", "Date", "Notes"});
                 for (Expense expense : expenseList) {
