@@ -10,64 +10,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Code checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Java 17 setup
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Android SDK setup
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 4. Setup Gradle - yeh automatically wrapper JAR handle karta hai
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: "8.2"
 
-      # 5. gradle-wrapper.jar manually download (backup)
       - name: Ensure gradle-wrapper.jar exists
         run: |
           mkdir -p gradle/wrapper
           if [ ! -f "gradle/wrapper/gradle-wrapper.jar" ]; then
-            echo "Downloading gradle-wrapper.jar..."
             curl -fsSL \
               "https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar" \
               -o gradle/wrapper/gradle-wrapper.jar
-            echo "Downloaded successfully"
-          else
-            echo "gradle-wrapper.jar already exists"
           fi
-          ls -lh gradle/wrapper/
 
-      # 6. Make gradlew executable
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 7. Gradle cache
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # 8. Build Debug APK
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info
+        run: ./gradlew assembleDebug --stacktrace 2>&1 | tail -100
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m"
 
-      # 9. Upload APK
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -75,8 +51,8 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      # 10. Show APK info
       - name: Show APK info
+        if: success()
         run: |
           echo "=== APK built successfully! ==="
           ls -lh app/build/outputs/apk/debug/
