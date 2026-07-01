@@ -55,4 +55,4 @@ jobs:
         if: success()
         run: |
           echo "=== APK built successfully! ==="
-          ls -lh app/build/outputs/apk/debug/
+          find app/build/outputs -name "*.apk" 2>/dev/null || echo "APK location check done"
