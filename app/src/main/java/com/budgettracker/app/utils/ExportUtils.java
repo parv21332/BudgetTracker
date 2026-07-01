@@ -1,12 +1,18 @@
 package com.budgettracker.app.utils;
 
 import android.content.Context;
-import android.os.Environment;
+import android.content.Intent;
+import android.net.Uri;
+
+import androidx.core.content.FileProvider;
 
 import com.budgettracker.app.data.model.Expense;
 import com.budgettracker.app.data.model.Income;
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -42,6 +48,20 @@ public class ExportUtils {
     private static final String EXPORT_FOLDER = "BudgetTracker";
 
     /**
+     * Create a share Intent for an exported file using FileProvider.
+     * Call this on the main thread after getting the export path.
+     */
+    public static Intent createShareIntent(Context context, String filePath, String mimeType) {
+        java.io.File file = new java.io.File(filePath);
+        Uri uri = FileProvider.getUriForFile(context,
+                context.getPackageName() + ".fileprovider", file);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, mimeType);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        return intent;
+    }
+
+    /**
      * Export income and expense lists to PDF.
      * @return file path on success, null on failure
      */
@@ -51,7 +71,7 @@ public class ExportUtils {
                                      String currencySymbol,
                                      String reportTitle) {
         try {
-            File exportDir = getExportDir();
+            File exportDir = getExportDir(context);
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
                     .format(new Date());
             File pdfFile = new File(exportDir, "report_" + timestamp + ".pdf");
@@ -139,7 +159,7 @@ public class ExportUtils {
                                        List<Expense> expenseList,
                                        String currencySymbol) {
         try {
-            File exportDir = getExportDir();
+            File exportDir = getExportDir(context);
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
                     .format(new Date());
             File excelFile = new File(exportDir, "report_" + timestamp + ".xlsx");
@@ -209,12 +229,16 @@ public class ExportUtils {
         }
     }
 
-    private static File getExportDir() {
-        File dir = new File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                EXPORT_FOLDER);
-        if (!dir.exists()) dir.mkdirs();
-        return dir;
+    private static File getExportDir(Context context) {
+        // App-specific external storage — no WRITE_EXTERNAL_STORAGE permission needed on any Android version
+        File dir = context.getExternalFilesDir(null);
+        if (dir == null) {
+            // Fallback to internal storage if external not available
+            dir = context.getFilesDir();
+        }
+        File exportDir = new File(dir, EXPORT_FOLDER);
+        if (!exportDir.exists()) exportDir.mkdirs();
+        return exportDir;
     }
 
     private static void addHeaderRow(Table table, String[] headers) {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- App-specific external storage: /sdcard/Android/data/com.budgettracker.app/files/ -->
+    <external-files-path
+        name="external_files"
+        path="." />
+    <!-- Internal files storage fallback -->
+    <files-path
+        name="internal_files"
+        path="." />
+</paths>

@@ -134,7 +134,22 @@ public class ReportsFragment extends Fragment {
             if (result == null) return;
             if (result.startsWith("PDF:") || result.startsWith("EXCEL:")) {
                 String path = result.contains(":") ? result.substring(result.indexOf(":") + 1) : "";
-                Snackbar.make(requireView(), "Exported to: " + path, Snackbar.LENGTH_LONG).show();
+                String mimeType = result.startsWith("PDF:") ? "application/pdf"
+                        : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Snackbar.make(requireView(), "Exported successfully", Snackbar.LENGTH_LONG)
+                        .setAction("Open", v -> {
+                            try {
+                                android.content.Intent intent =
+                                        com.budgettracker.app.utils.ExportUtils
+                                                .createShareIntent(requireContext(), path, mimeType);
+                                startActivity(android.content.Intent.createChooser(intent, "Open with"));
+                            } catch (Exception e) {
+                                Snackbar.make(requireView(),
+                                        "No app to open file. Path: " + path,
+                                        Snackbar.LENGTH_LONG).show();
+                            }
+                        })
+                        .show();
             } else if (result.startsWith("ERROR:")) {
                 Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
                         .setBackgroundTint(requireContext().getColor(R.color.error_red))

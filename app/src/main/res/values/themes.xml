@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Main App Theme - Material Design 3 -->
+    <!-- Main App Theme -->
     <style name="Theme.BudgetTracker" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
@@ -13,22 +13,9 @@
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/background</item>
-        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
         <item name="android:navigationBarColor">@color/surface</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <!-- Dark Theme -->
-    <style name="Theme.BudgetTracker.Dark" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/primary_light</item>
-        <item name="colorPrimaryVariant">@color/primary</item>
-        <item name="colorOnPrimary">@color/primary_dark</item>
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorOnSecondary">@color/on_secondary</item>
-        <item name="colorError">@color/error_red</item>
-        <item name="colorSurface">@color/surface_dark</item>
-        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
@@ -50,13 +37,22 @@
     <!-- Card Style -->
     <style name="Widget.BudgetTracker.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/divider</item>
+    </style>
+
+    <!-- Card Style - No border -->
+    <style name="Widget.BudgetTracker.Card.NoBorder" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
         <item name="cardElevation">4dp</item>
-        <item name="android:layout_margin">8dp</item>
+        <item name="strokeWidth">0dp</item>
     </style>
 
     <!-- FAB Style -->
     <style name="Widget.BudgetTracker.FAB" parent="Widget.Material3.FloatingActionButton.Primary">
         <item name="tint">@color/on_primary</item>
+        <item name="backgroundTint">@color/primary</item>
     </style>
 
     <!-- Input field style -->
@@ -65,12 +61,35 @@
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeColor">@color/border</item>
+        <item name="hintTextColor">@color/text_secondary</item>
     </style>
 
-    <!-- Button Style -->
+    <!-- Button Style - Primary -->
     <style name="Widget.BudgetTracker.Button" parent="Widget.Material3.Button">
-        <item name="android:minHeight">48dp</item>
-        <item name="cornerRadius">12dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <!-- Button Style - Outlined -->
+    <style name="Widget.BudgetTracker.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">52dp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="strokeColor">@color/border</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Transaction item style -->
+    <style name="Widget.BudgetTracker.TransactionCard" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">14dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/divider</item>
+        <item name="cardBackgroundColor">@color/surface</item>
     </style>
 
 </resources>

@@ -43,10 +43,22 @@ public class DashboardFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         dashboardViewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
 
-        // Load user currency
+        // Load user info
         SessionManager session = new SessionManager(requireContext());
-        String greeting = "Hello, " + session.getUserName() + "!";
-        binding.tvGreeting.setText(greeting);
+        String name = session.getUserName();
+        binding.tvGreeting.setText(getGreeting());
+        binding.tvUserName.setText("Hello, " + name + "!");
+
+        // Avatar initial
+        if (name != null && !name.isEmpty()) {
+            binding.tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+        }
+
+        // Month label
+        String monthLabel = new java.text.SimpleDateFormat("MMMM yyyy",
+                java.util.Locale.getDefault()).format(new java.util.Date());
+        binding.tvMonthLabel.setText(monthLabel);
+        binding.tvThisMonthLabel.setText(monthLabel);
 
         setupRecyclerViews();
         observeViewModel();
@@ -74,10 +86,7 @@ public class DashboardFragment extends Fragment {
 
         dashboardViewModel.balance.observe(getViewLifecycleOwner(), balance -> {
             binding.tvBalance.setText(CurrencyUtils.format(balance, currencySymbol));
-            int color = balance >= 0
-                    ? getResources().getColor(R.color.income_green, null)
-                    : getResources().getColor(R.color.expense_red, null);
-            binding.tvBalance.setTextColor(color);
+            // balance stays white on the dark gradient header
         });
 
         dashboardViewModel.monthlyIncome.observe(getViewLifecycleOwner(), income ->
@@ -120,8 +129,14 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh stats when returning to dashboard
         dashboardViewModel.loadStats();
+    }
+
+    private String getGreeting() {
+        int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
+        if (hour < 12) return "Good Morning 👋";
+        else if (hour < 17) return "Good Afternoon 👋";
+        else return "Good Evening 👋";
     }
 
     @Override

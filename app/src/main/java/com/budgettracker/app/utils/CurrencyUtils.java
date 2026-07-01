@@ -1,23 +1,32 @@
 package com.budgettracker.app.utils;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 /**
  * Utility class for currency formatting.
+ * Default currency: Indian Rupee (₹)
  */
 public class CurrencyUtils {
+
+    // Indian Rupee symbol — stored as unicode to avoid encoding issues
+    public static final String RUPEE = "\u20B9";
 
     private static final DecimalFormat df = new DecimalFormat("#,##,##0.00");
 
     /**
      * Format amount with currency symbol.
-     * @param amount value
-     * @param symbol currency symbol (e.g., "₹", "$")
+     * Always uses ₹ regardless of what symbol is passed, to prevent $ showing.
      */
     public static String format(double amount, String symbol) {
-        return symbol + df.format(amount);
+        // Always use ₹ — ignore any passed symbol to prevent $ fallback
+        return RUPEE + df.format(amount);
+    }
+
+    /**
+     * Format with explicit rupee symbol.
+     */
+    public static String formatRupee(double amount) {
+        return RUPEE + df.format(amount);
     }
 
     /**
