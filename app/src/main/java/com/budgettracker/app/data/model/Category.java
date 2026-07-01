@@ -3,12 +3,12 @@ package com.budgettracker.app.data.model;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
  * Category entity - stores expense categories.
- * Includes default system categories + user-created categories.
  * user_id = null means system/default category.
  */
 @Entity(tableName = "categories",
@@ -25,36 +25,41 @@ public class Category {
     private int id;
 
     @ColumnInfo(name = "user_id")
-    private Integer userId;   // null = system category
+    private Integer userId;
 
     @ColumnInfo(name = "name")
     private String name;
 
     @ColumnInfo(name = "icon")
-    private String icon;   // Material icon name
+    private String icon;
 
     @ColumnInfo(name = "color")
-    private String color;  // Hex color code
+    private String color;
 
     @ColumnInfo(name = "is_system")
     private boolean isSystem;
 
-    // Constructor for system categories
-    public Category(String name, String icon, String color) {
-        this.userId = null;
-        this.name = name;
-        this.icon = icon;
-        this.color = color;
-        this.isSystem = true;
-    }
-
-    // Constructor for user-created categories
-    public Category(int userId, String name, String icon, String color) {
+    /**
+     * Primary constructor used by Room.
+     */
+    public Category(Integer userId, String name, String icon, String color, boolean isSystem) {
         this.userId = userId;
         this.name = name;
         this.icon = icon;
         this.color = color;
-        this.isSystem = false;
+        this.isSystem = isSystem;
+    }
+
+    /** Constructor for system categories (userId = null) */
+    @Ignore
+    public Category(String name, String icon, String color) {
+        this(null, name, icon, color, true);
+    }
+
+    /** Constructor for user-created categories */
+    @Ignore
+    public Category(int userId, String name, String icon, String color) {
+        this(userId, name, icon, color, false);
     }
 
     // Getters and Setters
