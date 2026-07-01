@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -43,35 +42,34 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
 
-        setupProfileSection();
-        setupClickListeners();
+        // Profile
+        binding.tvUserName.setText(settingsViewModel.getUserName());
+        binding.tvUserEmail.setText(settingsViewModel.getUserEmail());
+
+        // Click listeners
+        binding.btnChangeName.setOnClickListener(v -> showChangeNameDialog());
+        binding.btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
+        binding.btnBackup.setOnClickListener(v -> doBackup());
+        binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
+        binding.btnLogout.setOnClickListener(v -> showLogoutConfirmation());
+
+        // Dark mode switch — set initial state without triggering the listener
+        settingsViewModel.darkModeEnabled.observe(getViewLifecycleOwner(), enabled -> {
+            if (binding != null) {
+                binding.switchDarkMode.setOnCheckedChangeListener(null);
+                binding.switchDarkMode.setChecked(enabled);
+                binding.switchDarkMode.setOnCheckedChangeListener((btn, isChecked) ->
+                        settingsViewModel.toggleDarkMode(isChecked));
+            }
+        });
+
         observeViewModel();
     }
 
-    private void setupProfileSection() {
-        binding.tvUserName.setText(settingsViewModel.getUserName());
-        binding.tvUserEmail.setText(settingsViewModel.getUserEmail());
-    }
-
-    private void setupClickListeners() {
-        // Dark mode toggle — DO NOT trigger on initial observe
-        binding.switchDarkMode.setOnCheckedChangeListener(null);
-
-        // Change Name
-        binding.btnChangeName.setOnClickListener(v -> showChangeNameDialog());
-
-        // Change Password
-        binding.btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-
-        // Backup database
-        binding.btnBackup.setOnClickListener(v ->
-                settingsViewModel.backupDatabase(requireContext()));
-
-        // Restore database
-        binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
-
-        // Logout
-        binding.btnLogout.setOnClickListener(v -> showLogoutConfirmation());
+    private void doBackup() {
+        binding.btnBackup.setEnabled(false);
+        binding.progressBar.setVisibility(View.VISIBLE);
+        settingsViewModel.backupDatabase(requireContext());
     }
 
     private void showChangeNameDialog() {
@@ -79,12 +77,12 @@ public class SettingsFragment extends Fragment {
                 .inflate(R.layout.dialog_change_name, null);
         TextInputEditText etName = dialogView.findViewById(R.id.et_new_name);
         etName.setText(settingsViewModel.getUserName());
-
         new AlertDialog.Builder(requireContext())
                 .setTitle("Change Name")
                 .setView(dialogView)
                 .setPositiveButton("Update", (d, w) -> {
-                    String name = etName.getText() != null ? etName.getText().toString().trim() : "";
+                    String name = etName.getText() != null
+                            ? etName.getText().toString().trim() : "";
                     settingsViewModel.updateName(name);
                 })
                 .setNegativeButton("Cancel", null)
@@ -94,18 +92,17 @@ public class SettingsFragment extends Fragment {
     private void showChangePasswordDialog() {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_change_password, null);
-        TextInputEditText etOld = dialogView.findViewById(R.id.et_old_password);
-        TextInputEditText etNew = dialogView.findViewById(R.id.et_new_password);
+        TextInputEditText etOld     = dialogView.findViewById(R.id.et_old_password);
+        TextInputEditText etNew     = dialogView.findViewById(R.id.et_new_password);
         TextInputEditText etConfirm = dialogView.findViewById(R.id.et_confirm_password);
-
         new AlertDialog.Builder(requireContext())
                 .setTitle("Change Password")
                 .setView(dialogView)
                 .setPositiveButton("Update", (d, w) -> {
-                    String oldPw = etOld.getText() != null ? etOld.getText().toString() : "";
-                    String newPw = etNew.getText() != null ? etNew.getText().toString() : "";
-                    String confirmPw = etConfirm.getText() != null ? etConfirm.getText().toString() : "";
-                    settingsViewModel.changePassword(oldPw, newPw, confirmPw);
+                    String o = etOld.getText()     != null ? etOld.getText().toString()     : "";
+                    String n = etNew.getText()     != null ? etNew.getText().toString()     : "";
+                    String c = etConfirm.getText() != null ? etConfirm.getText().toString() : "";
+                    settingsViewModel.changePassword(o, n, c);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -113,12 +110,11 @@ public class SettingsFragment extends Fragment {
 
     private void showRestoreDialog() {
         List<File> backups = BackupUtils.getAvailableBackups(requireContext());
-
         if (backups.isEmpty()) {
             new AlertDialog.Builder(requireContext())
                     .setTitle("No Backups Found")
-                    .setMessage("Backup location:\n" + BackupUtils.getBackupLocation(requireContext())
-                            + "\n\nCreate a backup first using the 'Backup Data' button.")
+                    .setMessage("No backup files found.\nBackup location:\n"
+                            + BackupUtils.getBackupLocation(requireContext()))
                     .setPositiveButton("OK", null)
                     .show();
             return;
@@ -127,18 +123,18 @@ public class SettingsFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
         String[] names = new String[backups.size()];
         for (int i = 0; i < backups.size(); i++) {
-            names[i] = backups.get(i).getName() + "\n("
-                    + sdf.format(new Date(backups.get(i).lastModified())) + ")";
+            names[i] = backups.get(i).getName()
+                    + "\n(" + sdf.format(new Date(backups.get(i).lastModified())) + ")";
         }
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Select Backup to Restore")
+                .setTitle("Select Backup")
                 .setItems(names, (d, which) -> {
                     File selected = backups.get(which);
                     new AlertDialog.Builder(requireContext())
                             .setTitle("Confirm Restore")
-                            .setMessage("Restoring from:\n" + selected.getName()
-                                    + "\n\nThis will replace all current data. App will restart. Continue?")
+                            .setMessage("Restore from:\n" + selected.getName()
+                                    + "\n\nAll current data will be replaced. App will restart.")
                             .setPositiveButton("Restore", (d2, w) ->
                                     settingsViewModel.restoreDatabase(
                                             requireContext(), selected.getAbsolutePath()))
@@ -152,7 +148,7 @@ public class SettingsFragment extends Fragment {
     private void showLogoutConfirmation() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Logout")
-                .setMessage("Are you sure you want to logout?")
+                .setMessage("Are you sure?")
                 .setPositiveButton("Logout", (d, w) -> {
                     settingsViewModel.logout();
                     if (requireActivity() instanceof MainActivity) {
@@ -164,31 +160,6 @@ public class SettingsFragment extends Fragment {
     }
 
     private void observeViewModel() {
-        // Dark mode — set switch silently first, then attach listener
-        settingsViewModel.darkModeEnabled.observe(getViewLifecycleOwner(), enabled -> {
-            // Remove listener before setting value to avoid triggering toggleDarkMode
-            binding.switchDarkMode.setOnCheckedChangeListener(null);
-            binding.switchDarkMode.setChecked(enabled);
-            // Re-attach listener after setting
-            binding.switchDarkMode.setOnCheckedChangeListener((btn, isChecked) ->
-                    settingsViewModel.toggleDarkMode(isChecked));
-        });
-
-        // Recreate activity when dark mode changes
-        settingsViewModel.recreateActivity.observe(getViewLifecycleOwner(), shouldRecreate -> {
-            if (shouldRecreate != null && shouldRecreate && isAdded()) {
-                settingsViewModel.recreateActivity.setValue(false);
-                Boolean isDark = settingsViewModel.darkModeEnabled.getValue();
-                // Apply theme
-                AppCompatDelegate.setDefaultNightMode(
-                        isDark != null && isDark
-                                ? AppCompatDelegate.MODE_NIGHT_YES
-                                : AppCompatDelegate.MODE_NIGHT_NO);
-                // Recreate to apply
-                requireActivity().recreate();
-            }
-        });
-
         settingsViewModel.currentUserName.observe(getViewLifecycleOwner(), name -> {
             if (binding != null) binding.tvUserName.setText(name);
         });
@@ -201,18 +172,24 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        // When dark mode is toggled, recreate the activity so the new theme applies
+        settingsViewModel.recreateActivity.observe(getViewLifecycleOwner(), shouldRecreate -> {
+            if (shouldRecreate != null && shouldRecreate && isAdded()) {
+                settingsViewModel.recreateActivity.setValue(false);
+                requireActivity().recreate();
+            }
+        });
+
         settingsViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
-            if (result == null || binding == null) return;
+            if (result == null || binding == null || !isAdded()) return;
+            settingsViewModel.operationResult.setValue(null);
+
             if (result.startsWith("SUCCESS:")) {
                 String msg = result.substring(8);
                 Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-
-                // If restore succeeded, restart app
-                if (msg.contains("Restore complete") || msg.contains("restart")) {
+                if (msg.contains("restart") || msg.contains("Restore complete")) {
                     new android.os.Handler().postDelayed(() -> {
-                        if (isAdded()) {
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                        }
+                        if (isAdded()) android.os.Process.killProcess(android.os.Process.myPid());
                     }, 2000);
                 }
             } else if (result.startsWith("ERROR:")) {
@@ -220,7 +197,6 @@ public class SettingsFragment extends Fragment {
                         .setBackgroundTint(requireContext().getColor(R.color.error_red))
                         .show();
             }
-            settingsViewModel.operationResult.setValue(null);
         });
     }
 
