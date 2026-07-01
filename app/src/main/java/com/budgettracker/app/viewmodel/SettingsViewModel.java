@@ -22,10 +22,7 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public final MutableLiveData<String> operationResult = new MutableLiveData<>();
     public final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-    public final MutableLiveData<Boolean> darkModeEnabled = new MutableLiveData<>(false);
     public final MutableLiveData<String> currentUserName = new MutableLiveData<>("");
-    // Signal to recreate activity for dark mode
-    public final MutableLiveData<Boolean> recreateActivity = new MutableLiveData<>(false);
 
     private final int userId;
 
@@ -36,13 +33,6 @@ public class SettingsViewModel extends AndroidViewModel {
         sessionManager = new SessionManager(application);
         userId = sessionManager.getUserId();
         currentUserName.setValue(sessionManager.getUserName());
-
-        BudgetDatabase.databaseWriteExecutor.execute(() -> {
-            com.budgettracker.app.data.model.User user = userDao.getUserById(userId);
-            if (user != null) {
-                darkModeEnabled.postValue(user.isDarkMode());
-            }
-        });
     }
 
     public void changePassword(String oldPassword, String newPassword, String confirmPassword) {
@@ -75,14 +65,6 @@ public class SettingsViewModel extends AndroidViewModel {
                 isLoading.postValue(false);
             }
         });
-    }
-
-    public void toggleDarkMode(boolean enabled) {
-        darkModeEnabled.setValue(enabled);
-        BudgetDatabase.databaseWriteExecutor.execute(() ->
-                userDao.updateDarkMode(userId, enabled));
-        // Signal activity to recreate with new theme
-        recreateActivity.postValue(true);
     }
 
     public void updateName(String name) {

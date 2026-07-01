@@ -4,15 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.budgettracker.app.R;
-import com.budgettracker.app.data.database.BudgetDatabase;
-import com.budgettracker.app.data.model.User;
 import com.budgettracker.app.databinding.ActivityMainBinding;
 import com.budgettracker.app.ui.auth.AuthActivity;
 import com.budgettracker.app.utils.SessionManager;
@@ -24,8 +21,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Restore dark mode preference before the layout inflates
-        applyDarkModePreference();
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -58,20 +53,6 @@ public class MainActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
-    }
-
-    private void applyDarkModePreference() {
-        SessionManager session = new SessionManager(this);
-        int userId = session.getUserId();
-        if (userId == -1) return;
-        try {
-            User user = BudgetDatabase.getDatabase(this).userDao().getUserById(userId);
-            if (user != null && user.isDarkMode()) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            }
-        } catch (Exception ignored) {}
     }
 
     @Override

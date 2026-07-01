@@ -53,16 +53,6 @@ public class SettingsFragment extends Fragment {
         binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
         binding.btnLogout.setOnClickListener(v -> showLogoutConfirmation());
 
-        // Dark mode switch — set initial state without triggering the listener
-        settingsViewModel.darkModeEnabled.observe(getViewLifecycleOwner(), enabled -> {
-            if (binding != null) {
-                binding.switchDarkMode.setOnCheckedChangeListener(null);
-                binding.switchDarkMode.setChecked(enabled);
-                binding.switchDarkMode.setOnCheckedChangeListener((btn, isChecked) ->
-                        settingsViewModel.toggleDarkMode(isChecked));
-            }
-        });
-
         observeViewModel();
     }
 
@@ -169,14 +159,6 @@ public class SettingsFragment extends Fragment {
                 binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
                 binding.btnBackup.setEnabled(!loading);
                 binding.btnRestore.setEnabled(!loading);
-            }
-        });
-
-        // When dark mode is toggled, recreate the activity so the new theme applies
-        settingsViewModel.recreateActivity.observe(getViewLifecycleOwner(), shouldRecreate -> {
-            if (shouldRecreate != null && shouldRecreate && isAdded()) {
-                settingsViewModel.recreateActivity.setValue(false);
-                requireActivity().recreate();
             }
         });
 
