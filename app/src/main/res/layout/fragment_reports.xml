@@ -329,7 +329,7 @@
                 app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_export_pdf"
+                android:id="@+id/btn_export_pdf_secondary"
                 style="@style/Widget.BudgetTracker.Button"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
