@@ -2,7 +2,6 @@ package com.budgettracker.app.data.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -10,13 +9,9 @@ import androidx.room.PrimaryKey;
 /**
  * Category entity - stores expense categories.
  * user_id = null means system/default category.
+ * Single-user app: no FK constraint on user_id needed.
  */
 @Entity(tableName = "categories",
-        foreignKeys = @ForeignKey(
-                entity = User.class,
-                parentColumns = "id",
-                childColumns = "user_id",
-                onDelete = ForeignKey.CASCADE),
         indices = {@Index("user_id")})
 public class Category {
 

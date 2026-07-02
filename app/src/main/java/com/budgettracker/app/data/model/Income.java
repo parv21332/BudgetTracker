@@ -2,20 +2,14 @@ package com.budgettracker.app.data.model;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 /**
  * Income entity - stores all income records.
- * Linked to users table via foreign key.
+ * Single-user app: user_id is always 1 (no FK constraint needed).
  */
 @Entity(tableName = "income",
-        foreignKeys = @ForeignKey(
-                entity = User.class,
-                parentColumns = "id",
-                childColumns = "user_id",
-                onDelete = ForeignKey.CASCADE),
         indices = {@Index("user_id"), @Index("date")})
 public class Income {
 

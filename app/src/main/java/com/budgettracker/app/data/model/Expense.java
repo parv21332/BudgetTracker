@@ -8,14 +8,11 @@ import androidx.room.PrimaryKey;
 
 /**
  * Expense entity - stores all expense records.
- * Linked to users table and categories table via foreign keys.
+ * Single-user app: user_id is always 1 (no FK constraint needed).
+ * Category FK retained so deleting a category sets category_id to null.
  */
 @Entity(tableName = "expenses",
         foreignKeys = {
-                @ForeignKey(entity = User.class,
-                        parentColumns = "id",
-                        childColumns = "user_id",
-                        onDelete = ForeignKey.CASCADE),
                 @ForeignKey(entity = Category.class,
                         parentColumns = "id",
                         childColumns = "category_id",
