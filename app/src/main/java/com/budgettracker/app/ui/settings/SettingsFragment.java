@@ -57,6 +57,7 @@ public class SettingsFragment extends Fragment {
         binding.btnSaveBudget.setOnClickListener(v -> saveBudgetLimit());
         binding.btnBackup.setOnClickListener(v -> doBackup());
         binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
+        binding.btnExportData.setOnClickListener(v -> exportReportPdf());
 
         observeViewModel();
     }
@@ -98,6 +99,60 @@ public class SettingsFragment extends Fragment {
         binding.btnBackup.setEnabled(false);
         binding.progressBar.setVisibility(View.VISIBLE);
         settingsViewModel.backupDatabase(requireContext());
+    }
+
+    private void exportReportPdf() {
+        binding.btnExportData.setEnabled(false);
+        binding.progressBar.setVisibility(View.VISIBLE);
+
+        new Thread(() -> {
+            try {
+                com.budgettracker.app.data.repository.IncomeRepository incomeRepository =
+                        new com.budgettracker.app.data.repository.IncomeRepository(requireActivity().getApplication());
+                com.budgettracker.app.data.repository.ExpenseRepository expenseRepository =
+                        new com.budgettracker.app.data.repository.ExpenseRepository(requireActivity().getApplication());
+
+                long startDate = com.budgettracker.app.utils.DateUtils.getStartOfCurrentMonth();
+                long endDate = com.budgettracker.app.utils.DateUtils.getEndOfCurrentMonth();
+                List<com.budgettracker.app.data.model.Income> incomeList =
+                        incomeRepository.getIncomeByDateRangeSync(com.budgettracker.app.utils.AppPrefs.USER_ID, startDate, endDate);
+                List<com.budgettracker.app.data.model.Expense> expenseList =
+                        expenseRepository.getExpensesByDateRangeSync(com.budgettracker.app.utils.AppPrefs.USER_ID, startDate, endDate);
+
+                String path = com.budgettracker.app.utils.ExportUtils.exportToPdf(
+                        requireContext(), incomeList, expenseList, "₹", "Budget Tracker - Current Month");
+
+                requireActivity().runOnUiThread(() -> {
+                    binding.progressBar.setVisibility(View.GONE);
+                    binding.btnExportData.setEnabled(true);
+                    if (path != null) {
+                        Snackbar.make(requireView(), "Data report exported", Snackbar.LENGTH_LONG)
+                                .setAction("Open", v -> {
+                                    try {
+                                        android.content.Intent intent = com.budgettracker.app.utils.ExportUtils.createShareIntent(
+                                                requireContext(), path, "application/pdf");
+                                        startActivity(android.content.Intent.createChooser(intent, "Open with"));
+                                    } catch (Exception e) {
+                                        Snackbar.make(requireView(), "Unable to open PDF", Snackbar.LENGTH_LONG).show();
+                                    }
+                                })
+                                .show();
+                    } else {
+                        Snackbar.make(requireView(), "Export failed", Snackbar.LENGTH_LONG)
+                                .setBackgroundTint(requireContext().getColor(R.color.error_red))
+                                .show();
+                    }
+                });
+            } catch (Exception e) {
+                requireActivity().runOnUiThread(() -> {
+                    binding.progressBar.setVisibility(View.GONE);
+                    binding.btnExportData.setEnabled(true);
+                    Snackbar.make(requireView(), "Export failed", Snackbar.LENGTH_LONG)
+                            .setBackgroundTint(requireContext().getColor(R.color.error_red))
+                            .show();
+                });
+            }
+        }).start();
     }
 
     private void showRestoreDialog() {

@@ -60,12 +60,22 @@ public class BackupUtils {
                     .format(new Date());
             File backupFile = new File(backupDir, "budget_backup_" + timestamp + ".db");
 
+            // Close the active Room database before copying files so the backup is consistent.
+            com.budgettracker.app.data.database.BudgetDatabase db =
+                    com.budgettracker.app.data.database.BudgetDatabase.getDatabase(context);
+            db.close();
+            com.budgettracker.app.data.database.BudgetDatabase.resetInstance();
+
             copyFile(dbFile, backupFile);
 
-            // Also copy WAL file if exists
+            // Also copy WAL/SHM files if they exist.
             File walFile = new File(dbFile.getParent(), DB_NAME + "-wal");
             if (walFile.exists() && walFile.length() > 0) {
                 copyFile(walFile, new File(backupDir, "budget_backup_" + timestamp + ".db-wal"));
+            }
+            File shmFile = new File(dbFile.getParent(), DB_NAME + "-shm");
+            if (shmFile.exists() && shmFile.length() > 0) {
+                copyFile(shmFile, new File(backupDir, "budget_backup_" + timestamp + ".db-shm"));
             }
 
             Log.d(TAG, "Backup saved to: " + backupFile.getAbsolutePath());
@@ -91,11 +101,31 @@ public class BackupUtils {
 
             File dbFile = context.getDatabasePath(DB_NAME);
 
-            // Delete WAL and SHM files to avoid conflicts
+            // Close any active Room instance and clear the cached singleton before replacing files.
+            com.budgettracker.app.data.database.BudgetDatabase db =
+                    com.budgettracker.app.data.database.BudgetDatabase.getDatabase(context);
+            db.close();
+            com.budgettracker.app.data.database.BudgetDatabase.resetInstance();
+
+            // Delete existing database files to avoid conflicts.
             new File(dbFile.getParent(), DB_NAME + "-wal").delete();
             new File(dbFile.getParent(), DB_NAME + "-shm").delete();
+            if (dbFile.exists()) {
+                dbFile.delete();
+            }
 
             copyFile(backupFile, dbFile);
+
+            // Restore WAL/SHM if available.
+            File walBackup = new File(backupFile.getParentFile(), backupFile.getName() + "-wal");
+            File shmBackup = new File(backupFile.getParentFile(), backupFile.getName() + "-shm");
+            if (walBackup.exists() && walBackup.length() > 0) {
+                copyFile(walBackup, new File(dbFile.getParent(), DB_NAME + "-wal"));
+            }
+            if (shmBackup.exists() && shmBackup.length() > 0) {
+                copyFile(shmBackup, new File(dbFile.getParent(), DB_NAME + "-shm"));
+            }
+
             Log.d(TAG, "Database restored from: " + backupFilePath);
             return true;
 

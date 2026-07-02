@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * ReportsFragment - shows monthly and weekly reports with pie and bar charts.
- * Supports PDF and Excel export.
+ * Supports PDF export.
  */
 public class ReportsFragment extends Fragment {
 
@@ -106,9 +106,6 @@ public class ReportsFragment extends Fragment {
     private void setupClickListeners() {
         binding.btnExportPdf.setOnClickListener(v ->
                 reportsViewModel.exportToPdf(currencySymbol));
-
-        binding.btnExportExcel.setOnClickListener(v ->
-                reportsViewModel.exportToExcel(currencySymbol));
     }
 
     private void observeViewModel() {
@@ -132,20 +129,18 @@ public class ReportsFragment extends Fragment {
 
         reportsViewModel.exportResult.observe(getViewLifecycleOwner(), result -> {
             if (result == null) return;
-            if (result.startsWith("PDF:") || result.startsWith("EXCEL:")) {
+            if (result.startsWith("PDF:")) {
                 String path = result.contains(":") ? result.substring(result.indexOf(":") + 1) : "";
-                String mimeType = result.startsWith("PDF:") ? "application/pdf"
-                        : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Snackbar.make(requireView(), "Exported successfully", Snackbar.LENGTH_LONG)
+                Snackbar.make(requireView(), "PDF exported successfully", Snackbar.LENGTH_LONG)
                         .setAction("Open", v -> {
                             try {
                                 android.content.Intent intent =
                                         com.budgettracker.app.utils.ExportUtils
-                                                .createShareIntent(requireContext(), path, mimeType);
+                                                .createShareIntent(requireContext(), path, "application/pdf");
                                 startActivity(android.content.Intent.createChooser(intent, "Open with"));
                             } catch (Exception e) {
                                 Snackbar.make(requireView(),
-                                        "No app to open file. Path: " + path,
+                                        "No app to open the PDF file. Path: " + path,
                                         Snackbar.LENGTH_LONG).show();
                             }
                         })

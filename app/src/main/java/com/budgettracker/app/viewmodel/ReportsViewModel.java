@@ -139,23 +139,6 @@ public class ReportsViewModel extends AndroidViewModel {
         }).start();
     }
 
-    public void exportToExcel(String currencySymbol) {
-        isLoading.postValue(true);
-        new Thread(() -> {
-            try {
-                long startDate = DateUtils.getStartOfMonth(selectedMonth, selectedYear);
-                long endDate = DateUtils.getEndOfMonth(selectedMonth, selectedYear);
-                List<Income> incomeList = incomeRepository.getIncomeByDateRangeSync(userId, startDate, endDate);
-                List<Expense> expenseList = expenseRepository.getExpensesByDateRangeSync(userId, startDate, endDate);
-
-                String path = ExportUtils.exportToExcel(app, incomeList, expenseList, currencySymbol);
-                exportResult.postValue(path != null ? "EXCEL:" + path : "ERROR:Excel export failed");
-            } finally {
-                isLoading.postValue(false);
-            }
-        }).start();
-    }
-
     private String getMonthName(int month) {
         String[] months = {"January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"};

@@ -59,6 +59,10 @@ public abstract class BudgetDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+    public static void resetInstance() {
+        INSTANCE = null;
+    }
+
     /**
      * Callback to seed default categories on first database creation.
      */
