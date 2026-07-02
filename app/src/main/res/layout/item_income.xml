@@ -4,32 +4,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="14dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="18dp"
     app:cardElevation="0dp"
     app:cardBackgroundColor="@color/surface"
-    app:strokeWidth="1dp"
+    app:strokeWidth="1.5dp"
     app:strokeColor="@color/divider">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="14dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
-        <!-- Green circle icon -->
+        <!-- Green gradient icon circle -->
         <FrameLayout
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_icon_circle_green"
-            android:layout_marginEnd="12dp">
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_stat_income"
+            android:layout_marginEnd="14dp">
             <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_income"
-                android:tint="@color/income_green" />
+                android:tint="#FFFFFF" />
         </FrameLayout>
 
         <!-- Content -->
@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -53,7 +53,7 @@
                 android:id="@+id/tv_income_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -82,32 +82,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/income_green"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="4dp">
+                android:layout_marginTop="6dp">
 
                 <ImageButton
                     android:id="@+id/btn_edit_income"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_icon_circle_blue"
                     android:src="@drawable/ic_edit"
                     android:tint="@color/primary"
-                    android:contentDescription="Edit" />
+                    android:contentDescription="Edit"
+                    android:scaleX="0.72"
+                    android:scaleY="0.72" />
 
                 <ImageButton
                     android:id="@+id/btn_delete_income"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_icon_circle_red"
                     android:src="@drawable/ic_delete"
                     android:tint="@color/expense_red"
-                    android:contentDescription="Delete" />
+                    android:contentDescription="Delete"
+                    android:scaleX="0.72"
+                    android:scaleY="0.72" />
 
             </LinearLayout>
         </LinearLayout>

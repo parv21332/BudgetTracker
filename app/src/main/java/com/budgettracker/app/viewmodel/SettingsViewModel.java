@@ -39,6 +39,17 @@ public class SettingsViewModel extends AndroidViewModel {
         operationResult.postValue("SUCCESS:Budget limit saved");
     }
 
+    // ── Display name ──────────────────────────────────────────────────────────
+
+    public String getDisplayName() {
+        return AppPrefs.getDisplayName(getApplication());
+    }
+
+    public void saveDisplayName(String name) {
+        AppPrefs.setDisplayName(getApplication(), name.trim());
+        operationResult.postValue("SUCCESS:Name saved");
+    }
+
     // ── Backup / Restore ─────────────────────────────────────────────────────
 
     public void backupDatabase(Context context) {

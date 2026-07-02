@@ -65,12 +65,16 @@ public class MainActivity extends AppCompatActivity {
                 R.id.settingsFragment
         ).build();
 
-        setSupportActionBar(binding.toolbar);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
         binding.bottomNavigation.setItemActiveIndicatorColor(
                 ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_light)));
+
+        // Adjust fragment container bottom padding dynamically to sit above nav bar
+        binding.bottomNavigation.post(() -> {
+            int navHeight = binding.bottomNavigation.getHeight();
+            binding.navHostFragment.setPadding(0, 0, 0, navHeight);
+        });
     }
 
     @Override

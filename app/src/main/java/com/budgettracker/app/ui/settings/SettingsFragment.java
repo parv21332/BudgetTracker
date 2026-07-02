@@ -41,17 +41,35 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
 
+        // Pre-fill display name
+        String savedName = settingsViewModel.getDisplayName();
+        if (!savedName.equals("User")) {
+            binding.etDisplayName.setText(savedName);
+        }
+
         // Pre-fill budget limit field
         double current = settingsViewModel.getBudgetLimit();
         if (current > 0) {
             binding.etBudgetLimit.setText(CurrencyUtils.formatPlain(current));
         }
 
+        binding.btnSaveName.setOnClickListener(v -> saveDisplayName());
         binding.btnSaveBudget.setOnClickListener(v -> saveBudgetLimit());
         binding.btnBackup.setOnClickListener(v -> doBackup());
         binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
 
         observeViewModel();
+    }
+
+    private void saveDisplayName() {
+        String name = binding.etDisplayName.getText() != null
+                ? binding.etDisplayName.getText().toString().trim() : "";
+        if (name.isEmpty()) {
+            binding.tilDisplayName.setError("Name cannot be empty");
+            return;
+        }
+        binding.tilDisplayName.setError(null);
+        settingsViewModel.saveDisplayName(name);
     }
 
     private void saveBudgetLimit() {

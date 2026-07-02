@@ -9,54 +9,74 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="80dp"
+        android:paddingBottom="88dp"
         android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
             <!-- Search bar -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.BudgetTracker.TextInputLayout"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/search"
-                android:layout_marginBottom="12dp"
-                app:startIconDrawable="@drawable/ic_search">
+                android:layout_height="54dp"
+                android:background="@drawable/bg_search_field"
+                android:gravity="center_vertical"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/text_hint"
+                    android:layout_marginEnd="10dp" />
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_search"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Search transactions..."
+                    android:textColorHint="@color/text_hint"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:inputType="text"
+                    android:gravity="center_vertical" />
+            </LinearLayout>
 
-            <!-- Filter buttons -->
+            <!-- Filter chips -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="12dp">
+                android:layout_marginBottom="16dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_filter_date"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="@string/filter_date"
-                    app:icon="@drawable/ic_date" />
+                    android:text="Filter by Date"
+                    android:textSize="12sp"
+                    app:cornerRadius="20dp"
+                    app:icon="@drawable/ic_date"
+                    app:iconSize="16dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_clear_filter"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
                     android:text="Clear"
+                    android:textSize="12sp"
+                    app:cornerRadius="20dp"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -66,8 +86,8 @@
                 android:id="@+id/tv_empty_state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="60dp"
-                android:text="@string/no_income"
+                android:paddingVertical="48dp"
+                android:text="No income records found"
                 android:textAlignment="center"
                 android:textColor="@color/text_secondary"
                 android:textSize="16sp"
@@ -78,7 +98,6 @@
                 android:id="@+id/rv_income"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
                 android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
@@ -90,10 +109,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="80dp"
         android:contentDescription="Add Income"
         android:src="@drawable/ic_add"
-        app:backgroundTint="@color/primary" />
+        app:backgroundTint="@color/income_green"
+        app:tint="#FFFFFF"
+        app:elevation="8dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

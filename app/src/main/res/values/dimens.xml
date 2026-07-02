@@ -8,9 +8,9 @@
     <dimen name="spacing_xl">32dp</dimen>
 
     <!-- Card -->
-    <dimen name="card_corner_radius">16dp</dimen>
-    <dimen name="card_elevation">4dp</dimen>
-    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_corner_radius">20dp</dimen>
+    <dimen name="card_elevation">0dp</dimen>
+    <dimen name="card_padding">18dp</dimen>
 
     <!-- Text sizes -->
     <dimen name="text_xs">10sp</dimen>
@@ -25,17 +25,17 @@
     <dimen name="stat_amount_size">22sp</dimen>
 
     <!-- Bottom navigation height -->
-    <dimen name="bottom_nav_height">56dp</dimen>
+    <dimen name="bottom_nav_height">60dp</dimen>
 
     <!-- FAB margin from bottom -->
-    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_margin">20dp</dimen>
 
     <!-- Input field height -->
-    <dimen name="input_height">56dp</dimen>
+    <dimen name="input_height">58dp</dimen>
 
     <!-- Button height -->
-    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_height">54dp</dimen>
 
     <!-- Avatar size -->
-    <dimen name="avatar_size">64dp</dimen>
+    <dimen name="avatar_size">48dp</dimen>
 </resources>

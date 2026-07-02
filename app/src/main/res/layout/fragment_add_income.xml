@@ -12,67 +12,87 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header -->
+        <!-- ── HEADER ── -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_header_gradient"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:paddingTop="28dp"
-            android:paddingBottom="28dp">
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/tv_form_title"
-                    android:layout_width="wrap_content"
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_stat_income"
+                    android:layout_marginEnd="14dp">
+                    <ImageView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_income"
+                        android:tint="#FFFFFF" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Add Income"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Record your earnings"
-                    android:textColor="#BFDBFE"
-                    android:textSize="13sp"
-                    android:layout_marginTop="4dp" />
+                    <TextView
+                        android:id="@+id/tv_form_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Income"
+                        android:textColor="#FFFFFF"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Record your earnings"
+                        android:textColor="#C4C0FF"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
             </LinearLayout>
-
         </FrameLayout>
 
-        <!-- Form card -->
+        <!-- ── FORM ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="24dp">
 
             <!-- Amount -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Amount"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="8dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_amount"
                 style="@style/Widget.BudgetTracker.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="18dp"
+                android:layout_marginBottom="20dp"
                 android:hint="0.00"
-                app:prefixText="\u20B9 "
+                app:prefixText="₹ "
                 app:startIconDrawable="@drawable/ic_money">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -81,7 +101,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal"
                     android:imeOptions="actionNext"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -91,17 +111,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Income Source"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="8dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_source"
                 style="@style/Widget.BudgetTracker.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="18dp"
+                android:layout_marginBottom="20dp"
                 android:hint="e.g. Salary, Freelance..."
                 app:startIconDrawable="@drawable/ic_work">
 
@@ -119,25 +140,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Date"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="8dp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="58dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="18dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="8dp"
+                android:layout_marginBottom="20dp">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_date"
-                    android:tint="@color/text_secondary"
+                    android:tint="@color/primary"
                     android:layout_marginEnd="12dp" />
 
                 <TextView
@@ -166,17 +189,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Notes (Optional)"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="8dp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_notes"
                 style="@style/Widget.BudgetTracker.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="28dp"
+                android:layout_marginBottom="32dp"
                 android:hint="Add a note...">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -195,7 +219,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:visibility="gone" />
 
             <!-- Save button -->
@@ -203,25 +227,25 @@
                 android:id="@+id/btn_save"
                 style="@style/Widget.BudgetTracker.Button"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="56dp"
                 android:layout_marginBottom="12dp"
                 android:text="Save Income"
-                android:textColor="@color/on_primary"
+                android:textColor="#FFFFFF"
                 app:backgroundTint="@color/income_green"
-                app:cornerRadius="14dp"
+                app:cornerRadius="16dp"
                 app:icon="@drawable/ic_income"
-                app:iconTint="@color/on_primary" />
+                app:iconTint="#FFFFFF" />
 
             <!-- Cancel button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cancel"
                 style="@style/Widget.BudgetTracker.Button.Outlined"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="56dp"
                 android:text="Cancel"
                 android:textColor="@color/text_secondary"
                 app:strokeColor="@color/border"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </LinearLayout>

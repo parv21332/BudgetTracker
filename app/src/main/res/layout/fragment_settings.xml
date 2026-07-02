@@ -10,7 +10,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingBottom="32dp">
+
+        <!-- ── HEADER ── -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_header_gradient"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+        </FrameLayout>
 
         <!-- Progress bar -->
         <ProgressBar
@@ -18,15 +38,33 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginTop="8dp"
             android:visibility="gone" />
 
-        <!-- Budget Limit Card -->
+        <!-- Section label: Profile -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PROFILE"
+            android:textColor="@color/primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.10"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Profile Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp">
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="@color/divider">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -34,31 +72,84 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- Section title -->
-                <TextView
-                    android:layout_width="wrap_content"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_display_name"
+                    style="@style/Widget.BudgetTracker.TextInputLayout"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Monthly Budget Target"
-                    android:textColor="@color/primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="16dp"
+                    android:hint="Your display name"
+                    app:startIconDrawable="@drawable/ic_person">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_display_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName|textCapWords"
+                        android:imeOptions="actionDone"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_name"
+                    style="@style/Widget.BudgetTracker.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:text="Save Name"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_person"
+                    app:iconTint="#FFFFFF" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section label: Budget -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BUDGET TARGET"
+            android:textColor="@color/primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.10"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Budget Limit Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="@color/divider">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="You will receive a notification when your monthly expenses exceed this limit."
+                    android:text="Set your monthly spending limit and get notified when you approach or exceed it."
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:layout_marginBottom="14dp" />
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.4"
+                    android:layout_marginBottom="16dp" />
 
-                <!-- Budget amount input -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_budget_limit"
                     style="@style/Widget.BudgetTracker.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
+                    android:layout_marginBottom="16dp"
                     android:hint="Monthly limit (e.g. 15000)"
                     app:prefixText="₹ "
                     app:startIconDrawable="@drawable/ic_expense">
@@ -73,29 +164,43 @@
                         android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Save button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_save_budget"
                     style="@style/Widget.BudgetTracker.Button"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="50dp"
                     android:text="Save Budget Target"
-                    android:textColor="@color/on_primary"
-                    app:backgroundTint="@color/primary"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_income"
-                    app:iconTint="@color/on_primary" />
+                    app:iconTint="#FFFFFF" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section label: Data -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DATA MANAGEMENT"
+            android:textColor="@color/primary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.10"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="8dp" />
 
         <!-- Data Management Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp">
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/surface"
+            app:strokeWidth="1.5dp"
+            app:strokeColor="@color/divider">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -103,30 +208,23 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Data Management"
-                    android:textColor="@color/primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp" />
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_backup"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/Widget.BudgetTracker.Button.Outlined"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/backup_data"
+                    android:layout_height="50dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="Backup Data"
+                    app:cornerRadius="14dp"
                     app:icon="@drawable/ic_backup" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_restore"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/Widget.BudgetTracker.Button.Outlined"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/restore_data"
+                    android:layout_height="50dp"
+                    android:text="Restore Data"
+                    app:cornerRadius="14dp"
                     app:icon="@drawable/ic_restore" />
 
             </LinearLayout>

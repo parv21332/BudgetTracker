@@ -129,6 +129,12 @@ public class DashboardFragment extends Fragment {
     public void onResume() {
         super.onResume();
         dashboardViewModel.loadStats();
+        // Refresh name in case user changed it in Settings
+        String name = AppPrefs.getDisplayName(requireContext());
+        binding.tvUserName.setText("Hello, " + name + "!");
+        if (name != null && !name.isEmpty()) {
+            binding.tvAvatarInitial.setText(String.valueOf(name.charAt(0)).toUpperCase());
+        }
     }
 
     private String getGreeting() {

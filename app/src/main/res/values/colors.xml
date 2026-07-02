@@ -1,87 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand Primary - Vibrant Blue -->
-    <color name="primary">#2563EB</color>
-    <color name="primary_dark">#1E3A5F</color>
-    <color name="primary_light">#DBEAFE</color>
-    <color name="primary_gradient_start">#2563EB</color>
-    <color name="primary_gradient_end">#1E3A5F</color>
+    <!-- Brand Primary - Deep Indigo/Violet -->
+    <color name="primary">#6C63FF</color>
+    <color name="primary_dark">#3D35B5</color>
+    <color name="primary_light">#EDE9FF</color>
+    <color name="primary_gradient_start">#6C63FF</color>
+    <color name="primary_gradient_end">#3D35B5</color>
     <color name="on_primary">#FFFFFF</color>
 
-    <!-- Secondary / Accent - Navy -->
-    <color name="secondary">#1E3A5F</color>
-    <color name="secondary_dark">#152A45</color>
+    <!-- Secondary / Accent - Deep Purple -->
+    <color name="secondary">#3D35B5</color>
+    <color name="secondary_dark">#2A2480</color>
     <color name="on_secondary">#FFFFFF</color>
 
-    <!-- Background -->
-    <color name="background">#F7F9FB</color>
+    <!-- Background - Soft off-white -->
+    <color name="background">#F5F4FF</color>
     <color name="surface">#FFFFFF</color>
-    <color name="surface_variant">#F0F4FF</color>
-    <color name="on_background">#2D2D2D</color>
-    <color name="on_surface">#2D2D2D</color>
+    <color name="surface_variant">#F0EEFF</color>
+    <color name="on_background">#1A1A2E</color>
+    <color name="on_surface">#1A1A2E</color>
 
-    <!-- Dark theme colors (kept for reference, dark mode removed) -->
-    <color name="background_dark">#121212</color>
-    <color name="surface_dark">#1E1E1E</color>
+    <!-- Dark theme colors -->
+    <color name="background_dark">#0F0E1A</color>
+    <color name="surface_dark">#1E1D2E</color>
     <color name="on_background_dark">#FFFFFF</color>
 
-    <!-- Semantic - Income Green -->
-    <color name="income_green">#4CAF50</color>
-    <color name="income_green_dark">#388E3C</color>
-    <color name="income_green_light">#E8F5E9</color>
+    <!-- Semantic - Income Emerald -->
+    <color name="income_green">#10B981</color>
+    <color name="income_green_dark">#059669</color>
+    <color name="income_green_light">#D1FAE5</color>
 
-    <!-- Semantic - Expense Coral Red -->
-    <color name="expense_red">#E57373</color>
-    <color name="expense_red_dark">#C62828</color>
-    <color name="expense_red_light">#FFEBEE</color>
+    <!-- Semantic - Expense Rose Red -->
+    <color name="expense_red">#F43F5E</color>
+    <color name="expense_red_dark">#BE123C</color>
+    <color name="expense_red_light">#FFE4E6</color>
 
     <!-- Semantic - Warning Amber -->
-    <color name="warning_amber">#F9A825</color>
-    <color name="warning_amber_light">#FFF8E1</color>
+    <color name="warning_amber">#F59E0B</color>
+    <color name="warning_amber_light">#FEF3C7</color>
 
-    <!-- Balance Blue -->
-    <color name="balance_blue">#2563EB</color>
+    <!-- Balance -->
+    <color name="balance_blue">#6C63FF</color>
 
     <!-- Error -->
-    <color name="error_red">#D32F2F</color>
+    <color name="error_red">#DC2626</color>
     <color name="on_error">#FFFFFF</color>
 
     <!-- Card backgrounds -->
-    <color name="card_income_bg">#E8F5E9</color>
-    <color name="card_expense_bg">#FFEBEE</color>
-    <color name="card_balance_bg">#EFF6FF</color>
-    <color name="card_warning_bg">#FFF8E1</color>
+    <color name="card_income_bg">#D1FAE5</color>
+    <color name="card_expense_bg">#FFE4E6</color>
+    <color name="card_balance_bg">#EDE9FF</color>
+    <color name="card_warning_bg">#FEF3C7</color>
 
     <!-- Text -->
-    <color name="text_primary">#2D2D2D</color>
-    <color name="text_secondary">#6B7280</color>
-    <color name="text_hint">#9CA3AF</color>
+    <color name="text_primary">#1A1A2E</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
     <color name="text_on_dark">#FFFFFF</color>
-    <color name="text_on_dark_secondary">#BFDBFE</color>
+    <color name="text_on_dark_secondary">#C4C0FF</color>
 
     <!-- Divider / Border -->
-    <color name="divider">#E5E7EB</color>
-    <color name="border">#D1D5DB</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="border">#CBD5E1</color>
 
-    <!-- Icon tint on colored bg -->
-    <color name="icon_income">#4CAF50</color>
-    <color name="icon_expense">#E57373</color>
+    <!-- Icon tint -->
+    <color name="icon_income">#10B981</color>
+    <color name="icon_expense">#F43F5E</color>
 
     <!-- Category colors -->
-    <color name="cat_food">#FF7043</color>
-    <color name="cat_transport">#2563EB</color>
-    <color name="cat_shopping">#7C3AED</color>
+    <color name="cat_food">#F97316</color>
+    <color name="cat_transport">#3B82F6</color>
+    <color name="cat_shopping">#8B5CF6</color>
     <color name="cat_bills">#F59E0B</color>
     <color name="cat_health">#EF4444</color>
     <color name="cat_entertainment">#06B6D4</color>
-    <color name="cat_education">#4CAF50</color>
-    <color name="cat_others">#6B7280</color>
+    <color name="cat_education">#10B981</color>
+    <color name="cat_others">#64748B</color>
 
     <!-- Bottom nav -->
-    <color name="nav_active">#2563EB</color>
-    <color name="nav_inactive">#9CA3AF</color>
+    <color name="nav_active">#6C63FF</color>
+    <color name="nav_inactive">#94A3B8</color>
 
     <!-- Shadow / overlay -->
     <color name="shadow">#1A000000</color>
     <color name="overlay_light">#80FFFFFF</color>
+
+    <!-- Header gradient -->
+    <color name="header_start">#6C63FF</color>
+    <color name="header_end">#3D35B5</color>
+    <color name="header_accent">#9D97FF</color>
 </resources>
