@@ -70,73 +70,71 @@ public class ExportUtils {
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc);
 
-            try {
-                // Title
-                Paragraph title = new Paragraph(reportTitle)
-                        .setFontSize(18)
-                        .setBold()
-                        .setTextAlignment(TextAlignment.CENTER)
-                        .setMarginBottom(10);
-                document.add(title);
+            // Title
+            Paragraph title = new Paragraph(reportTitle)
+                    .setFontSize(18)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(10);
+            document.add(title);
 
-                // Generated date
-                Paragraph date = new Paragraph("Generated: " + DateUtils.formatDateFull(System.currentTimeMillis()))
-                        .setFontSize(10)
-                        .setTextAlignment(TextAlignment.CENTER)
-                        .setMarginBottom(20);
-                document.add(date);
+            // Generated date
+            Paragraph date = new Paragraph("Generated: " + DateUtils.formatDateFull(System.currentTimeMillis()))
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(20);
+            document.add(date);
 
-                // Summary
-                double totalIncome = incomeList.stream().mapToDouble(Income::getAmount).sum();
-                double totalExpense = expenseList.stream().mapToDouble(Expense::getAmount).sum();
-                double balance = totalIncome - totalExpense;
+            // Summary
+            double totalIncome = incomeList.stream().mapToDouble(Income::getAmount).sum();
+            double totalExpense = expenseList.stream().mapToDouble(Expense::getAmount).sum();
+            double balance = totalIncome - totalExpense;
 
-                Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1}))
+            Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1}))
+                    .useAllAvailableWidth();
+            addSummaryCell(summaryTable, "Total Income", CurrencyUtils.format(totalIncome, currencySymbol), new DeviceRgb(76, 175, 80));
+            addSummaryCell(summaryTable, "Total Expense", CurrencyUtils.format(totalExpense, currencySymbol), new DeviceRgb(244, 67, 54));
+            addSummaryCell(summaryTable, "Balance", CurrencyUtils.format(balance, currencySymbol),
+                    balance >= 0 ? new DeviceRgb(33, 150, 243) : new DeviceRgb(255, 87, 34));
+            document.add(summaryTable);
+            document.add(new Paragraph("\n"));
+
+            // Income Table
+            if (!incomeList.isEmpty()) {
+                document.add(new Paragraph("Income Transactions")
+                        .setFontSize(14).setBold().setMarginTop(10));
+                Table incomeTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 3}))
                         .useAllAvailableWidth();
-                addSummaryCell(summaryTable, "Total Income", CurrencyUtils.format(totalIncome, currencySymbol), new DeviceRgb(76, 175, 80));
-                addSummaryCell(summaryTable, "Total Expense", CurrencyUtils.format(totalExpense, currencySymbol), new DeviceRgb(244, 67, 54));
-                addSummaryCell(summaryTable, "Balance", CurrencyUtils.format(balance, currencySymbol),
-                        balance >= 0 ? new DeviceRgb(33, 150, 243) : new DeviceRgb(255, 87, 34));
-                document.add(summaryTable);
+                addHeaderRow(incomeTable, new String[]{"Source", "Amount", "Date", "Notes"});
+                for (Income income : incomeList) {
+                    incomeTable.addCell(new Cell().add(new Paragraph(income.getSource())));
+                    incomeTable.addCell(new Cell().add(new Paragraph(CurrencyUtils.format(income.getAmount(), currencySymbol))));
+                    incomeTable.addCell(new Cell().add(new Paragraph(DateUtils.formatDate(income.getDate()))));
+                    incomeTable.addCell(new Cell().add(new Paragraph(income.getNotes() != null ? income.getNotes() : "")));
+                }
+                document.add(incomeTable);
                 document.add(new Paragraph("\n"));
+            }
 
-                // Income Table
-                if (!incomeList.isEmpty()) {
-                    document.add(new Paragraph("Income Transactions")
-                            .setFontSize(14).setBold().setMarginTop(10));
-                    Table incomeTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 3}))
-                            .useAllAvailableWidth();
-                    addHeaderRow(incomeTable, new String[]{"Source", "Amount", "Date", "Notes"});
-                    for (Income income : incomeList) {
-                        incomeTable.addCell(new Cell().add(new Paragraph(income.getSource())));
-                        incomeTable.addCell(new Cell().add(new Paragraph(CurrencyUtils.format(income.getAmount(), currencySymbol))));
-                        incomeTable.addCell(new Cell().add(new Paragraph(DateUtils.formatDate(income.getDate()))));
-                        incomeTable.addCell(new Cell().add(new Paragraph(income.getNotes() != null ? income.getNotes() : "")));
-                    }
-                    document.add(incomeTable);
-                    document.add(new Paragraph("\n"));
+            // Expense Table
+            if (!expenseList.isEmpty()) {
+                document.add(new Paragraph("Expense Transactions")
+                        .setFontSize(14).setBold().setMarginTop(10));
+                Table expenseTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 3}))
+                        .useAllAvailableWidth();
+                addHeaderRow(expenseTable, new String[]{"Category", "Amount", "Date", "Notes"});
+                for (Expense expense : expenseList) {
+                    expenseTable.addCell(new Cell().add(new Paragraph(expense.getCategoryName())));
+                    expenseTable.addCell(new Cell().add(new Paragraph(CurrencyUtils.format(expense.getAmount(), currencySymbol))));
+                    expenseTable.addCell(new Cell().add(new Paragraph(DateUtils.formatDate(expense.getDate()))));
+                    expenseTable.addCell(new Cell().add(new Paragraph(expense.getNotes() != null ? expense.getNotes() : "")));
                 }
+                document.add(expenseTable);
+            }
 
-                // Expense Table
-                if (!expenseList.isEmpty()) {
-                    document.add(new Paragraph("Expense Transactions")
-                            .setFontSize(14).setBold().setMarginTop(10));
-                    Table expenseTable = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 3}))
-                            .useAllAvailableWidth();
-                    addHeaderRow(expenseTable, new String[]{"Category", "Amount", "Date", "Notes"});
-                    for (Expense expense : expenseList) {
-                        expenseTable.addCell(new Cell().add(new Paragraph(expense.getCategoryName())));
-                        expenseTable.addCell(new Cell().add(new Paragraph(CurrencyUtils.format(expense.getAmount(), currencySymbol))));
-                        expenseTable.addCell(new Cell().add(new Paragraph(DateUtils.formatDate(expense.getDate()))));
-                        expenseTable.addCell(new Cell().add(new Paragraph(expense.getNotes() != null ? expense.getNotes() : "")));
-                    }
-                    document.add(expenseTable);
-                }
-
-                document.close();
-                pdfDoc.close();
-                return pdfFile.getAbsolutePath();
-
+            document.close();
+            pdfDoc.close();
+            return pdfFile.getAbsolutePath();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
