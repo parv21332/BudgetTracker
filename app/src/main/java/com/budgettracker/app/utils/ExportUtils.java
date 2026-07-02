@@ -136,14 +136,6 @@ public class ExportUtils {
                 document.close();
                 pdfDoc.close();
                 return pdfFile.getAbsolutePath();
-            } finally {
-                if (document.isOpen()) {
-                    document.close();
-                }
-                if (pdfDoc.isOpen()) {
-                    pdfDoc.close();
-                }
-            }
 
         } catch (Exception e) {
             e.printStackTrace();
