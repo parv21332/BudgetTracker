@@ -11,7 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.budgettracker.app.data.database.BudgetDatabase;
 import com.budgettracker.app.data.database.IncomeDao;
 import com.budgettracker.app.data.model.Income;
-import com.budgettracker.app.utils.SessionManager;
+import com.budgettracker.app.utils.AppPrefs;
 
 import java.util.List;
 
@@ -29,8 +29,7 @@ public class IncomeViewModel extends AndroidViewModel {
         super(application);
         BudgetDatabase db = BudgetDatabase.getDatabase(application);
         incomeDao = db.incomeDao();
-        SessionManager session = new SessionManager(application);
-        userId = session.getUserId();
+        userId = AppPrefs.USER_ID;
         Log.d(TAG, "IncomeViewModel init, userId=" + userId);
         allIncome = incomeDao.getAllIncome(userId);
     }
@@ -45,7 +44,7 @@ public class IncomeViewModel extends AndroidViewModel {
             return;
         }
         if (userId <= 0) {
-            operationResult.postValue("ERROR:Session expired. Please login again.");
+            operationResult.postValue("ERROR:Could not identify user");
             return;
         }
 

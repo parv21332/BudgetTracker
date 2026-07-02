@@ -13,7 +13,7 @@ import com.budgettracker.app.data.database.CategoryDao;
 import com.budgettracker.app.data.database.ExpenseDao;
 import com.budgettracker.app.data.model.Category;
 import com.budgettracker.app.data.model.Expense;
-import com.budgettracker.app.utils.SessionManager;
+import com.budgettracker.app.utils.AppPrefs;
 
 import java.util.List;
 
@@ -34,9 +34,7 @@ public class ExpenseViewModel extends AndroidViewModel {
         BudgetDatabase db = BudgetDatabase.getDatabase(application);
         expenseDao = db.expenseDao();
         categoryDao = db.categoryDao();
-        SessionManager session = new SessionManager(application);
-        userId = session.getUserId();
-        Log.d(TAG, "ExpenseViewModel init, userId=" + userId);
+        userId = AppPrefs.USER_ID;
 
         allExpenses = expenseDao.getAllExpenses(userId);
         categories = categoryDao.getAllCategories(userId);
@@ -53,7 +51,7 @@ public class ExpenseViewModel extends AndroidViewModel {
             return;
         }
         if (userId <= 0) {
-            operationResult.postValue("ERROR:Session expired. Please login again.");
+            operationResult.postValue("ERROR:Could not identify user");
             return;
         }
 

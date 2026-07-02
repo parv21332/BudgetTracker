@@ -11,7 +11,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.budgettracker.app.data.model.Category;
 import com.budgettracker.app.data.model.Expense;
 import com.budgettracker.app.data.model.Income;
-import com.budgettracker.app.data.model.User;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,8 +21,8 @@ import java.util.concurrent.Executors;
  *
  * Tables: users, income, expenses, categories
  */
-@Database(entities = {User.class, Income.class, Expense.class, Category.class},
-        version = 1,
+@Database(entities = {Income.class, Expense.class, Category.class},
+        version = 2,
         exportSchema = false)
 public abstract class BudgetDatabase extends RoomDatabase {
 
@@ -34,7 +33,6 @@ public abstract class BudgetDatabase extends RoomDatabase {
             Executors.newFixedThreadPool(4);
 
     // Abstract DAO methods
-    public abstract UserDao userDao();
     public abstract IncomeDao incomeDao();
     public abstract ExpenseDao expenseDao();
     public abstract CategoryDao categoryDao();
@@ -51,6 +49,7 @@ public abstract class BudgetDatabase extends RoomDatabase {
                                     BudgetDatabase.class,
                                     "budget_tracker.db")
                             .addCallback(sRoomDatabaseCallback)
+                            .fallbackToDestructiveMigration()
                             // Enable WAL mode for better performance
                             .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                             .build();

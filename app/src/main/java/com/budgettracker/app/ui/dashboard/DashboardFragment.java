@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.budgettracker.app.R;
 import com.budgettracker.app.databinding.FragmentDashboardBinding;
+import com.budgettracker.app.utils.AppPrefs;
 import com.budgettracker.app.utils.CurrencyUtils;
-import com.budgettracker.app.utils.SessionManager;
 import com.budgettracker.app.viewmodel.DashboardViewModel;
 
 /**
@@ -44,8 +44,7 @@ public class DashboardFragment extends Fragment {
         dashboardViewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
 
         // Load user info
-        SessionManager session = new SessionManager(requireContext());
-        String name = session.getUserName();
+        String name = AppPrefs.getDisplayName(requireContext());
         binding.tvGreeting.setText(getGreeting());
         binding.tvUserName.setText("Hello, " + name + "!");
 

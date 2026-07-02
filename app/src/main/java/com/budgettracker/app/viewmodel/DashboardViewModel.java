@@ -12,9 +12,8 @@ import com.budgettracker.app.data.model.Expense;
 import com.budgettracker.app.data.model.Income;
 import com.budgettracker.app.data.repository.ExpenseRepository;
 import com.budgettracker.app.data.repository.IncomeRepository;
-import com.budgettracker.app.data.repository.UserRepository;
+import com.budgettracker.app.utils.AppPrefs;
 import com.budgettracker.app.utils.DateUtils;
-import com.budgettracker.app.utils.SessionManager;
 
 import java.util.List;
 
@@ -26,8 +25,6 @@ public class DashboardViewModel extends AndroidViewModel {
 
     private final IncomeRepository incomeRepository;
     private final ExpenseRepository expenseRepository;
-    private final UserRepository userRepository;
-    private final SessionManager sessionManager;
     private final int userId;
 
     // LiveData for dashboard stats
@@ -46,14 +43,12 @@ public class DashboardViewModel extends AndroidViewModel {
         super(application);
         incomeRepository = new IncomeRepository(application);
         expenseRepository = new ExpenseRepository(application);
-        userRepository = new UserRepository(application);
-        sessionManager = new SessionManager(application);
-        userId = sessionManager.getUserId();
+        userId = AppPrefs.USER_ID;
 
         recentIncome = incomeRepository.getRecentIncome(userId);
         recentExpenses = expenseRepository.getRecentExpenses(userId);
 
-        userName.setValue(sessionManager.getUserName());
+        userName.setValue(AppPrefs.getDisplayName(application));
         loadStats();
     }
 

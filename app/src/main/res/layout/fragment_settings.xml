@@ -20,7 +20,7 @@
             android:layout_gravity="center"
             android:visibility="gone" />
 
-        <!-- Profile Card -->
+        <!-- Budget Limit Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,74 +34,57 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Section title -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Profile"
+                    android:text="Monthly Budget Target"
                     android:textColor="@color/primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="6dp" />
 
                 <TextView
-                    android:id="@+id/tv_user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="User Name"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tv_user_email"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="user@email.com"
+                    android:text="You will receive a notification when your monthly expenses exceed this limit."
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="12sp"
+                    android:layout_marginBottom="14dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_change_name"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Change Name" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Security Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Security"
-                    android:textColor="@color/primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="12dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_change_password"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                <!-- Budget amount input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_budget_limit"
+                    style="@style/Widget.BudgetTracker.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/change_password"
-                    app:icon="@drawable/ic_lock" />
+                    android:layout_marginBottom="14dp"
+                    android:hint="Monthly limit (e.g. 15000)"
+                    app:prefixText="₹ "
+                    app:startIconDrawable="@drawable/ic_expense">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_budget_limit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:imeOptions="actionDone"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Save button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_budget"
+                    style="@style/Widget.BudgetTracker.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:text="Save Budget Target"
+                    android:textColor="@color/on_primary"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="14dp"
+                    app:icon="@drawable/ic_income"
+                    app:iconTint="@color/on_primary" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -148,19 +131,6 @@
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <!-- Logout -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_logout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="8dp"
-            android:text="@string/logout"
-            android:textColor="@color/on_error"
-            app:backgroundTint="@color/error_red"
-            app:cornerRadius="12dp"
-            app:icon="@drawable/ic_logout"
-            app:iconTint="@color/on_error" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

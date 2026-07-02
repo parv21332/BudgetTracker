@@ -16,9 +16,9 @@ import com.budgettracker.app.R;
 import com.budgettracker.app.data.database.BudgetDatabase;
 import com.budgettracker.app.data.model.Income;
 import com.budgettracker.app.databinding.FragmentAddIncomeBinding;
+import com.budgettracker.app.utils.AppPrefs;
 import com.budgettracker.app.utils.CurrencyUtils;
 import com.budgettracker.app.utils.DateUtils;
-import com.budgettracker.app.utils.SessionManager;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Calendar;
@@ -45,9 +45,8 @@ public class AddIncomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get context and userId on main thread
         appContext = requireContext().getApplicationContext();
-        currentUserId = new SessionManager(appContext).getUserId();
+        currentUserId = AppPrefs.USER_ID;
 
         if (getArguments() != null) {
             int incomeId = getArguments().getInt("incomeId", -1);
@@ -132,7 +131,7 @@ public class AddIncomeFragment extends Fragment {
         binding.tilSource.setError(null);
 
         if (currentUserId <= 0) {
-            showSnack("Session error. Please logout and login again.", true);
+            showSnack("Could not identify user.", true);
             return;
         }
 

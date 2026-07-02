@@ -18,9 +18,10 @@ import com.budgettracker.app.data.database.BudgetDatabase;
 import com.budgettracker.app.data.model.Category;
 import com.budgettracker.app.data.model.Expense;
 import com.budgettracker.app.databinding.FragmentAddExpenseBinding;
+import com.budgettracker.app.utils.AppPrefs;
 import com.budgettracker.app.utils.CurrencyUtils;
 import com.budgettracker.app.utils.DateUtils;
-import com.budgettracker.app.utils.SessionManager;
+import com.budgettracker.app.utils.NotificationHelper;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class AddExpenseFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         appContext     = requireContext().getApplicationContext();
-        currentUserId  = new SessionManager(appContext).getUserId();
+        currentUserId  = AppPrefs.USER_ID;
 
         if (getArguments() != null) {
             int expId = getArguments().getInt("expenseId", -1);
@@ -176,7 +177,7 @@ public class AddExpenseFragment extends Fragment {
         }
 
         if (currentUserId <= 0) {
-            showSnack("Session error. Please logout and login again.", true);
+            showSnack("Could not identify user.", true);
             return;
         }
 
@@ -216,6 +217,29 @@ public class AddExpenseFragment extends Fragment {
                         throw new Exception("DB insert failed, id=" + insertedId);
                     }
                 }
+
+                // ── Budget limit check ──────────────────────────────────────
+                double budgetLimit = AppPrefs.getBudgetLimit(ctx);
+                if (budgetLimit > 0) {
+                    java.text.SimpleDateFormat mf =
+                            new java.text.SimpleDateFormat("MM", java.util.Locale.getDefault());
+                    java.text.SimpleDateFormat yf =
+                            new java.text.SimpleDateFormat("yyyy", java.util.Locale.getDefault());
+                    String monthStr = mf.format(new java.util.Date());
+                    String yearStr  = yf.format(new java.util.Date());
+                    double monthTotal = db.expenseDao()
+                            .getMonthlyExpense(AppPrefs.USER_ID, monthStr, yearStr);
+
+                    if (monthTotal >= budgetLimit) {
+                        NotificationHelper.sendBudgetExceededNotification(
+                                ctx, budgetLimit, monthTotal);
+                    } else if (monthTotal >= budgetLimit * 0.8) {
+                        // 80 % warning
+                        NotificationHelper.sendBudgetWarningNotification(
+                                ctx, budgetLimit, monthTotal);
+                    }
+                }
+                // ───────────────────────────────────────────────────────────
 
                 if (isAdded()) requireActivity().runOnUiThread(this::goBack);
 

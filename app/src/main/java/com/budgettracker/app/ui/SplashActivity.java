@@ -10,44 +10,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 import com.budgettracker.app.R;
-import com.budgettracker.app.ui.auth.AuthActivity;
-import com.budgettracker.app.utils.SessionManager;
 
 /**
- * SplashActivity - entry point of the app.
+ * SplashActivity — entry point of the app.
  * Uses Android 12 SplashScreen API.
- * Redirects to Login or Dashboard based on session state.
+ * No login required: always navigates directly to MainActivity.
  */
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_DELAY = 1500; // ms
+    private static final int SPLASH_DELAY = 1200; // ms
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Install splash screen (Android 12+ native API)
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        // Keep splash visible until navigation is ready
         splashScreen.setKeepOnScreenCondition(() -> false);
 
-        new Handler(Looper.getMainLooper()).postDelayed(this::navigateNext, SPLASH_DELAY);
-    }
-
-    private void navigateNext() {
-        SessionManager session = new SessionManager(this);
-        Intent intent;
-
-        if (session.isLoggedIn()) {
-            intent = new Intent(this, MainActivity.class);
-        } else {
-            intent = new Intent(this, AuthActivity.class);
-        }
-
-        startActivity(intent);
-        finish();
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }, SPLASH_DELAY);
     }
 }

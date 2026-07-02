@@ -12,9 +12,9 @@ import com.budgettracker.app.data.model.Income;
 import com.budgettracker.app.data.model.MonthlyReport;
 import com.budgettracker.app.data.repository.ExpenseRepository;
 import com.budgettracker.app.data.repository.IncomeRepository;
+import com.budgettracker.app.utils.AppPrefs;
 import com.budgettracker.app.utils.DateUtils;
 import com.budgettracker.app.utils.ExportUtils;
-import com.budgettracker.app.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -46,8 +46,7 @@ public class ReportsViewModel extends AndroidViewModel {
         this.app = application;
         incomeRepository = new IncomeRepository(application);
         expenseRepository = new ExpenseRepository(application);
-        SessionManager session = new SessionManager(application);
-        userId = session.getUserId();
+        userId = AppPrefs.USER_ID;
         loadCurrentMonthReport();
     }
 

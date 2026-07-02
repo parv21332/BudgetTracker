@@ -13,11 +13,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.budgettracker.app.R;
 import com.budgettracker.app.databinding.FragmentSettingsBinding;
-import com.budgettracker.app.ui.MainActivity;
 import com.budgettracker.app.utils.BackupUtils;
+import com.budgettracker.app.utils.CurrencyUtils;
 import com.budgettracker.app.viewmodel.SettingsViewModel;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -42,60 +41,45 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
 
-        // Profile
-        binding.tvUserName.setText(settingsViewModel.getUserName());
-        binding.tvUserEmail.setText(settingsViewModel.getUserEmail());
+        // Pre-fill budget limit field
+        double current = settingsViewModel.getBudgetLimit();
+        if (current > 0) {
+            binding.etBudgetLimit.setText(CurrencyUtils.formatPlain(current));
+        }
 
-        // Click listeners
-        binding.btnChangeName.setOnClickListener(v -> showChangeNameDialog());
-        binding.btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
+        binding.btnSaveBudget.setOnClickListener(v -> saveBudgetLimit());
         binding.btnBackup.setOnClickListener(v -> doBackup());
         binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
-        binding.btnLogout.setOnClickListener(v -> showLogoutConfirmation());
 
         observeViewModel();
+    }
+
+    private void saveBudgetLimit() {
+        String raw = binding.etBudgetLimit.getText() != null
+                ? binding.etBudgetLimit.getText().toString().trim() : "";
+
+        if (raw.isEmpty()) {
+            binding.tilBudgetLimit.setError("Enter a budget amount");
+            return;
+        }
+        binding.tilBudgetLimit.setError(null);
+
+        try {
+            double limit = Double.parseDouble(raw);
+            if (limit <= 0) {
+                binding.tilBudgetLimit.setError("Amount must be greater than 0");
+                return;
+            }
+            settingsViewModel.saveBudgetLimit(limit);
+        } catch (NumberFormatException e) {
+            binding.tilBudgetLimit.setError("Invalid number");
+        }
     }
 
     private void doBackup() {
         binding.btnBackup.setEnabled(false);
         binding.progressBar.setVisibility(View.VISIBLE);
         settingsViewModel.backupDatabase(requireContext());
-    }
-
-    private void showChangeNameDialog() {
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_change_name, null);
-        TextInputEditText etName = dialogView.findViewById(R.id.et_new_name);
-        etName.setText(settingsViewModel.getUserName());
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Change Name")
-                .setView(dialogView)
-                .setPositiveButton("Update", (d, w) -> {
-                    String name = etName.getText() != null
-                            ? etName.getText().toString().trim() : "";
-                    settingsViewModel.updateName(name);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-    private void showChangePasswordDialog() {
-        View dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_change_password, null);
-        TextInputEditText etOld     = dialogView.findViewById(R.id.et_old_password);
-        TextInputEditText etNew     = dialogView.findViewById(R.id.et_new_password);
-        TextInputEditText etConfirm = dialogView.findViewById(R.id.et_confirm_password);
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Change Password")
-                .setView(dialogView)
-                .setPositiveButton("Update", (d, w) -> {
-                    String o = etOld.getText()     != null ? etOld.getText().toString()     : "";
-                    String n = etNew.getText()     != null ? etNew.getText().toString()     : "";
-                    String c = etConfirm.getText() != null ? etConfirm.getText().toString() : "";
-                    settingsViewModel.changePassword(o, n, c);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 
     private void showRestoreDialog() {
@@ -135,25 +119,7 @@ public class SettingsFragment extends Fragment {
                 .show();
     }
 
-    private void showLogoutConfirmation() {
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Logout")
-                .setMessage("Are you sure?")
-                .setPositiveButton("Logout", (d, w) -> {
-                    settingsViewModel.logout();
-                    if (requireActivity() instanceof MainActivity) {
-                        ((MainActivity) requireActivity()).logout();
-                    }
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
     private void observeViewModel() {
-        settingsViewModel.currentUserName.observe(getViewLifecycleOwner(), name -> {
-            if (binding != null) binding.tvUserName.setText(name);
-        });
-
         settingsViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
             if (binding != null) {
                 binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);

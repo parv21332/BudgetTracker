@@ -1,9 +1,13 @@
 package com.budgettracker.app.ui;
 
-import android.content.Intent;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
@@ -13,19 +17,36 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.budgettracker.app.R;
 import com.budgettracker.app.databinding.ActivityMainBinding;
-import com.budgettracker.app.ui.auth.AuthActivity;
-import com.budgettracker.app.utils.SessionManager;
+import com.budgettracker.app.utils.NotificationHelper;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private NavController navController;
 
+    /** Launcher for POST_NOTIFICATIONS runtime permission (Android 13+). */
+    private final ActivityResultLauncher<String> notifPermLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    granted -> { /* user made their choice — channel already created */ });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Create notification channel (safe to call every launch)
+        NotificationHelper.createNotificationChannel(this);
+
+        // Request POST_NOTIFICATIONS on Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
         setupNavigation();
     }
 
@@ -48,18 +69,8 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
         NavigationUI.setupWithNavController(binding.bottomNavigation, navController);
 
-        // Set active indicator color programmatically (avoids resource linker issues with
-        // app:itemActiveIndicatorColor in XML on some AGP versions)
         binding.bottomNavigation.setItemActiveIndicatorColor(
                 ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary_light)));
-    }
-
-    public void logout() {
-        new SessionManager(this).clearSession();
-        Intent intent = new Intent(this, AuthActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
     }
 
     @Override
