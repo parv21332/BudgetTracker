@@ -106,6 +106,16 @@ public class ReportsFragment extends Fragment {
     private void setupClickListeners() {
         binding.btnExportPdf.setOnClickListener(v ->
                 reportsViewModel.exportToPdf(currencySymbol));
+
+        binding.btnRefresh.setOnClickListener(v -> {
+            int month = selectedMonth;
+            int year = selectedYear;
+            if (binding.tabLayout.getSelectedTabPosition() == 1) {
+                reportsViewModel.loadWeeklyReport();
+            } else {
+                reportsViewModel.loadReport(month, year);
+            }
+        });
     }
 
     private void observeViewModel() {

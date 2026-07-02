@@ -7,22 +7,14 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.budgettracker.app.R;
 import com.budgettracker.app.databinding.FragmentSettingsBinding;
-import com.budgettracker.app.utils.BackupUtils;
 import com.budgettracker.app.utils.CurrencyUtils;
 import com.budgettracker.app.viewmodel.SettingsViewModel;
 import com.google.android.material.snackbar.Snackbar;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 public class SettingsFragment extends Fragment {
 
@@ -55,9 +47,6 @@ public class SettingsFragment extends Fragment {
 
         binding.btnSaveName.setOnClickListener(v -> saveDisplayName());
         binding.btnSaveBudget.setOnClickListener(v -> saveBudgetLimit());
-        binding.btnBackup.setOnClickListener(v -> doBackup());
-        binding.btnRestore.setOnClickListener(v -> showRestoreDialog());
-        binding.btnExportData.setOnClickListener(v -> exportReportPdf());
 
         observeViewModel();
     }
@@ -95,112 +84,7 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    private void doBackup() {
-        binding.btnBackup.setEnabled(false);
-        binding.progressBar.setVisibility(View.VISIBLE);
-        settingsViewModel.backupDatabase(requireContext());
-    }
-
-    private void exportReportPdf() {
-        binding.btnExportData.setEnabled(false);
-        binding.progressBar.setVisibility(View.VISIBLE);
-
-        new Thread(() -> {
-            try {
-                com.budgettracker.app.data.repository.IncomeRepository incomeRepository =
-                        new com.budgettracker.app.data.repository.IncomeRepository(requireActivity().getApplication());
-                com.budgettracker.app.data.repository.ExpenseRepository expenseRepository =
-                        new com.budgettracker.app.data.repository.ExpenseRepository(requireActivity().getApplication());
-
-                long startDate = com.budgettracker.app.utils.DateUtils.getStartOfCurrentMonth();
-                long endDate = com.budgettracker.app.utils.DateUtils.getEndOfCurrentMonth();
-                List<com.budgettracker.app.data.model.Income> incomeList =
-                        incomeRepository.getIncomeByDateRangeSync(com.budgettracker.app.utils.AppPrefs.USER_ID, startDate, endDate);
-                List<com.budgettracker.app.data.model.Expense> expenseList =
-                        expenseRepository.getExpensesByDateRangeSync(com.budgettracker.app.utils.AppPrefs.USER_ID, startDate, endDate);
-
-                String path = com.budgettracker.app.utils.ExportUtils.exportToPdf(
-                        requireContext(), incomeList, expenseList, "₹", "Budget Tracker - Current Month");
-
-                requireActivity().runOnUiThread(() -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.btnExportData.setEnabled(true);
-                    if (path != null) {
-                        Snackbar.make(requireView(), "Data report exported", Snackbar.LENGTH_LONG)
-                                .setAction("Open", v -> {
-                                    try {
-                                        android.content.Intent intent = com.budgettracker.app.utils.ExportUtils.createShareIntent(
-                                                requireContext(), path, "application/pdf");
-                                        startActivity(android.content.Intent.createChooser(intent, "Open with"));
-                                    } catch (Exception e) {
-                                        Snackbar.make(requireView(), "Unable to open PDF", Snackbar.LENGTH_LONG).show();
-                                    }
-                                })
-                                .show();
-                    } else {
-                        Snackbar.make(requireView(), "Export failed", Snackbar.LENGTH_LONG)
-                                .setBackgroundTint(requireContext().getColor(R.color.error_red))
-                                .show();
-                    }
-                });
-            } catch (Exception e) {
-                requireActivity().runOnUiThread(() -> {
-                    binding.progressBar.setVisibility(View.GONE);
-                    binding.btnExportData.setEnabled(true);
-                    Snackbar.make(requireView(), "Export failed", Snackbar.LENGTH_LONG)
-                            .setBackgroundTint(requireContext().getColor(R.color.error_red))
-                            .show();
-                });
-            }
-        }).start();
-    }
-
-    private void showRestoreDialog() {
-        List<File> backups = BackupUtils.getAvailableBackups(requireContext());
-        if (backups.isEmpty()) {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("No Backups Found")
-                    .setMessage("No backup files found.\nBackup location:\n"
-                            + BackupUtils.getBackupLocation(requireContext()))
-                    .setPositiveButton("OK", null)
-                    .show();
-            return;
-        }
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
-        String[] names = new String[backups.size()];
-        for (int i = 0; i < backups.size(); i++) {
-            names[i] = backups.get(i).getName()
-                    + "\n(" + sdf.format(new Date(backups.get(i).lastModified())) + ")";
-        }
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Select Backup")
-                .setItems(names, (d, which) -> {
-                    File selected = backups.get(which);
-                    new AlertDialog.Builder(requireContext())
-                            .setTitle("Confirm Restore")
-                            .setMessage("Restore from:\n" + selected.getName()
-                                    + "\n\nAll current data will be replaced. App will restart.")
-                            .setPositiveButton("Restore", (d2, w) ->
-                                    settingsViewModel.restoreDatabase(
-                                            requireContext(), selected.getAbsolutePath()))
-                            .setNegativeButton("Cancel", null)
-                            .show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
     private void observeViewModel() {
-        settingsViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
-            if (binding != null) {
-                binding.progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-                binding.btnBackup.setEnabled(!loading);
-                binding.btnRestore.setEnabled(!loading);
-            }
-        });
-
         settingsViewModel.operationResult.observe(getViewLifecycleOwner(), result -> {
             if (result == null || binding == null || !isAdded()) return;
             settingsViewModel.operationResult.postValue(null);
@@ -208,11 +92,6 @@ public class SettingsFragment extends Fragment {
             if (result.startsWith("SUCCESS:")) {
                 String msg = result.substring(8);
                 Snackbar.make(requireView(), msg, Snackbar.LENGTH_LONG).show();
-                if (msg.contains("restart") || msg.contains("Restore complete")) {
-                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                        if (isAdded()) android.os.Process.killProcess(android.os.Process.myPid());
-                    }, 2000);
-                }
             } else if (result.startsWith("ERROR:")) {
                 Snackbar.make(requireView(), result.substring(6), Snackbar.LENGTH_LONG)
                         .setBackgroundTint(requireContext().getColor(R.color.error_red))

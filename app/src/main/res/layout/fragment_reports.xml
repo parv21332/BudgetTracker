@@ -71,6 +71,16 @@
                         android:tint="#FFFFFF"
                         android:contentDescription="Next month" />
 
+                    <ImageButton
+                        android:id="@+id/btn_refresh"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_icon_circle_white"
+                        android:src="@drawable/ic_refresh"
+                        android:tint="#FFFFFF"
+                        android:contentDescription="Refresh report" />
+
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>
